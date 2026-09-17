@@ -1,0 +1,19 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Secrets and environment files
+*.env
+.env
+!*.example
+
+# Python cache & build files
+__pycache__/
+*.pyc
+*.pyo
+
+# Audio temp recordings
+*.webm
+*.wav
+*.mp3

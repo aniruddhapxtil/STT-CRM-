@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: voice-crm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: voicecrm
+      POSTGRES_USER: voicecrm
+      POSTGRES_PASSWORD: voicecrm
+    ports:
+      - "5432:5432"
+    volumes:
+      - voice_crm_pgdata:/var/lib/postgresql/data
+volumes:
+  voice_crm_pgdata:

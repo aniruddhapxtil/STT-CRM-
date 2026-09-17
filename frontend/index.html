@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DataPhi Voice CRM — Multi-Entity Workspace</title>
+<style>
+:root {
+  --primary: #6C5CE7;
+  --primary-dark: #4B3FC4;
+  --secondary: #049C8F;
+  --warning: #C98A14;
+  --danger: #D14545;
+  --success: #1E8E5A;
+  --dark: #1C2333;
+  --gray-bg: #EEF0F4;
+  --border: #E2E4EA;
+  --text-main: #20242C;
+  --text-sub: #666C79;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--gray-bg); color: var(--text-main); font-family: "Segoe UI", Arial, sans-serif; }
+main { width: min(1180px, 95%); margin: 30px auto 60px; }
+
+/* Control & Header Cards */
+.card {
+  background: #fff; border: 1px solid var(--border); border-radius: 14px;
+  padding: 22px; box-shadow: 0 4px 16px rgba(20,35,60,.04); margin-bottom: 20px;
+}
+h1 { font-size: 30px; margin: 0 0 6px; font-weight: 800; color: var(--dark); }
+.sub { color: var(--text-sub); font-size: 13.5px; margin: 0 0 16px; }
+.eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .12em; color: var(--primary); text-transform: uppercase; margin-bottom: 4px; }
+
+/* Buttons & Controls */
+.controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+button {
+  border: 0; border-radius: 8px; padding: 10px 18px; font-size: 13px;
+  font-weight: 700; cursor: pointer; display: inline-flex; align-items: center;
+  gap: 7px; transition: all 0.15s ease-in-out;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:disabled { background: #A59DF0; cursor: not-allowed; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-outline { background: #fff; border: 1.5px solid var(--border); color: var(--text-main); }
+.btn-outline:hover { background: #F8F9FB; }
+.status { font-weight: 700; font-size: 13px; color: var(--text-sub); }
+.live { color: var(--danger); }
+
+/* Badges */
+.badge { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 12px; display: inline-flex; align-items: center; }
+.badge-draft { background: #FEF3F2; color: #B42318; border: 1px solid #FECDCA; }
+.badge-review { background: #FFF8E6; color: #B57900; border: 1px solid #FDE68A; }
+.badge-committed { background: #E5F5EC; color: var(--success); border: 1px solid #B9E6CD; }
+.voice-tag { color: var(--primary); font-size: 10.5px; font-weight: 600; }
+
+/* Transcript Display */
+.transcript-box {
+  background: #FAFBFD; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 12px 16px; min-height: 44px; color: var(--text-sub); font-size: 13.5px;
+  line-height: 1.5; font-style: italic;
+}
+
+/* Alert Banner */
+.alert-banner {
+  background: #FFF4F2; border-left: 4px solid var(--danger);
+  padding: 14px 18px; border-radius: 8px; margin-bottom: 20px;
+}
+.alert-banner.success { background: #F4FAF6; border-left-color: var(--success); }
+.alert-banner.review { background: #FFFDF5; border-left-color: var(--warning); }
+.alert-title { font-size: 13px; font-weight: 800; color: var(--danger); margin-bottom: 4px; }
+.alert-banner.success .alert-title { color: var(--success); }
+.alert-banner.review .alert-title { color: var(--warning); }
+.alert-text { font-size: 12px; color: #5F2120; line-height: 1.5; }
+.alert-banner.success .alert-text { color: #175C3E; }
+.alert-banner.review .alert-text { color: #78350F; }
+
+/* Responsive Entity Form Cards Grid */
+.entity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; }
+.entity-card {
+  background: #FFFFFF; border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 14px;
+}
+.entity-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 10px; border-bottom: 1.5px solid #F0F2F6;
+}
+.entity-title { font-size: 13.5px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+
+/* Form Field Styling */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+.form-full { grid-column: span 2; }
+.field-group { display: flex; flex-direction: column; gap: 4px; }
+.field-label { font-size: 11.5px; font-weight: 700; color: var(--dark); display: flex; justify-content: space-between; }
+.field-label .req { color: var(--danger); }
+.input-box, select, textarea {
+  padding: 8px 11px; border-radius: 6px; border: 1.5px solid var(--border);
+  font-size: 12.5px; color: var(--text-main); background: #FFFFFF; outline: none; width: 100%;
+}
+.input-box:focus, select:focus, textarea:focus {
+  border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.12);
+}
+.input-box:read-only {
+  background: #F8F9FB; color: var(--text-sub); cursor: not-allowed; border-color: #E2E4EA;
+}
+.input-missing {
+  border-color: var(--danger) !important;
+  background: #FFFBFB !important;
+}
+.field-helper { font-size: 10.5px; color: var(--text-sub); }
+.helper-missing { color: var(--danger); font-weight: 600; }
+
+/* Confirmation Action Bar */
+.confirmation-bar {
+  background: #FFFFFF; border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+  margin-top: 20px; flex-wrap: wrap; gap: 12px;
+}
+</style>
+</head>
+<body>
+
+<main>
+  <!-- Voice Recorder Card -->
+  <section class="card">
+    <div class="eyebrow">Voice CRM Ingestion Engine</div>
+    <h1>DataPhi Voice CRM</h1>
+    <p class="sub">Speak commercial notes. The engine routes your intent, transcribes speech with Whisper, and renders only the relevant entity cards.</p>
+    
+    <div class="controls">
+      <button id="record" class="btn-primary">🎤 Start Recording</button>
+      <button id="stop" class="btn-danger" disabled>⏹ Stop Recording</button>
+      <span id="status" class="status">Ready</span>
+    </div>
+  </section>
+
+  <!-- Spoken Transcript Display -->
+  <section class="card" id="transcriptPane" style="display:none;">
+    <h3 style="margin-top:0; font-size:14px; color:var(--dark);">Captured Audio Transcript</h3>
+    <div id="transcript" class="transcript-box"></div>
+  </section>
+
+  <!-- Staged Review Workspace -->
+  <section id="workspacePane" style="display:none;">
+    
+    <!-- Status & Alerts -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <h2 style="font-size:18px; margin:0;" id="workspaceTitle">Staged Entity Workspace</h2>
+        <span id="statusBadge" class="badge"></span>
+      </div>
+      <span id="draftIdTag" style="font-size:12px; color:var(--text-sub); font-family:monospace;"></span>
+    </div>
+
+    <div id="alertBanner" class="alert-banner" style="display:none;">
+      <div id="alertTitle" class="alert-title"></div>
+      <div id="alertText" class="alert-text"></div>
+    </div>
+
+    <!-- RELEVANT ENTITY FORMS GRID -->
+    <div class="entity-grid">
+      
+      <!-- FORM 1: ACCOUNT FORM (Shown for Account, Contact, Lead, Opportunity) -->
+      <div class="entity-card" id="cardAccount" style="border-top: 4px solid var(--primary);">
+        <div class="entity-header">
+          <span class="entity-title" style="color:var(--primary-dark);">🏢 Account Form</span>
+          <span class="badge" style="background:#F4F3FF; color:var(--primary);">Parent Enterprise</span>
+        </div>
+        <div class="form-grid">
+          <div class="field-group form-full">
+            <label class="field-label">
+              <span>Account Name <span class="req">*</span></span>
+              <span class="voice-tag" id="tag_acc_name"></span>
+            </label>
+            <input class="input-box" id="acc_name" type="text" placeholder="e.g. Dubai Integrated Economic Zones" oninput="onAccountNameChange()">
+            <div id="acc_name_help" class="field-helper">Legal entity name.</div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">
+              <span>Client Account Manager</span>
+              <span class="voice-tag" id="tag_acc_manager"></span>
+            </label>
+            <input class="input-box" id="acc_manager" type="text" placeholder="e.g. Ramanj Falasi">
+          </div>
+          <div class="field-group">
+            <label class="field-label">
+              <span>Industry</span>
+              <span class="voice-tag" id="tag_acc_industry"></span>
+            </label>
+            <input class="input-box" id="acc_industry" type="text" placeholder="e.g. Semi Govt, BFSI">
+          </div>
+          <div class="field-group form-full">
+            <label class="field-label">
+              <span>Region</span>
+              <span class="voice-tag" id="tag_acc_region"></span>
+            </label>
+            <input class="input-box" id="acc_region" type="text" placeholder="e.g. Dubai, UAE">
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM 2: CONTACT FORM (Shown for Contact, Lead, Opportunity) -->
+      <div class="entity-card" id="cardContact" style="border-top: 4px solid #4B5563; display:none;">
+        <div class="entity-header">
+          <span class="entity-title" style="color:#1F2937;">👤 Contact Form</span>
+          <span class="badge" style="background:#F3F4F6; color:#374151;">Client Stakeholder</span>
+        </div>
+        <div class="form-grid">
+          <!-- Associated Account Field Linking -->
+          <div class="field-group form-full">
+            <label class="field-label">
+              <span>Associated Account <span class="req">*</span></span>
+              <span class="badge" style="background:#EEF2FF; color:var(--primary);">Relational Link</span>
+            </label>
+            <input class="input-box" id="con_acc_name" type="text" placeholder="Links to Account Name above" readonly>
+            <div class="field-helper">Foreign key reference linking this contact to the parent enterprise.</div>
+          </div>
+          <div class="field-group form-full">
+            <label class="field-label">
+              <span>Stakeholder Name <span class="req">*</span></span>
+              <span class="voice-tag" id="tag_con_name"></span>
+            </label>
+            <input class="input-box" id="con_name" type="text" placeholder="e.g. Tariq Mansoor" oninput="validateMandatory()">
+            <div id="con_name_help" class="field-helper">Primary client contact or decision maker.</div>
+          </div>
+          <div class="field-group form-full">
+            <label class="field-label">
+              <span>Designation / Role</span>
+              <span class="voice-tag" id="tag_con_desig"></span>
+            </label>
+            <input class="input-box" id="con_desig" type="text" placeholder="e.g. VP of Smart Cities">
+          </div>
+          <div class="field-group">
+            <label class="field-label"><span>Email</span></label>
+            <input class="input-box" id="con_email" type="email" placeholder="name@company.com">
+          </div>
+          <div class="field-group">
+            <label class="field-label"><span>Mobile</span></label>
+            <input class="input-box" id="con_mobile" type="text" placeholder="+971 50 ...">
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM 3: LEAD FORM (Shown for Lead, Opportunity) -->
+      <div class="entity-card" id="cardLead" style="border-top: 4px solid var(--warning); display:none;">
+        <div class="entity-header">
+          <span class="entity-title" style="color:var(--warning);">🎯 Lead Form</span>
+          <span id="leadStatusTag" class="badge" style="background:#FFF9F0; color:var(--warning);">Inbound Pipeline</span>
+        </div>
+        <div class="form-grid">
+          <div class="field-group form-full">
+            <label class="field-label">
+              <span>Lead Title <span class="req">*</span></span>
+              <span class="voice-tag" id="tag_lead_name"></span>
+            </label>
+            <input class="input-box" id="lead_name" type="text" placeholder="e.g. Telemetry Lakehouse Scope">
+          </div>
+          <div class="field-group">
+            <label class="field-label"><span>Classification Stage</span></label>
+            <select class="input-box" id="lead_stage">
+              <option value="Non-Qualified">Non-Qualified</option>
+              <option value="Qualified">Qualified</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label"><span>Temperature</span></label>
+            <select class="input-box" id="lead_type">
+              <option value="Warm">Warm</option>
+              <option value="Hot">Hot</option>
+              <option value="Cold">Cold</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label"><span>Service Line</span></label>
+            <input class="input-box" id="lead_service" type="text" placeholder="e.g. DE & Analytics">
+          </div>
+          <div class="field-group">
+            <label class="field-label"><span>Technology Stack</span></label>
+            <input class="input-box" id="lead_tech" type="text" placeholder="e.g. Azure Databricks">
+          </div>
+          <div class="field-group form-full">
+            <label class="field-label"><span>Lead Action Item</span></label>
+            <input class="input-box" id="lead_next_steps" type="text" placeholder="e.g. Schedule discovery call">
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM 4: OPPORTUNITY FORM (Shown strictly for Opportunity) -->
+      <div class="entity-card" id="cardOpportunity" style="border-top: 4px solid var(--secondary); display:none;">
+        <div class="entity-header">
+          <span class="entity-title" style="color:var(--secondary);">💼 Opportunity Form</span>
+          <span class="badge" style="background:#E6F7F5; color:var(--secondary);">Commercial Deal</span>
+        </div>
+        <div class="form-grid">
+          <div class="field-group form-full">
+            <label class="field-label">
+              <span>Opportunity Name <span class="req">*</span></span>
+              <span class="voice-tag" id="tag_opty_name"></span>
+            </label>
+            <input class="input-box" id="opty_name" type="text" placeholder="e.g. IoT Telemetry Lakehouse">
+          </div>
+          <div class="field-group">
+            <label class="field-label"><span>Pipeline Stage</span></label>
+            <select class="input-box" id="opty_stage">
+              <option value="Discovery (40%)" selected>Discovery (40%)</option>
+              <option value="Technical Discussion (60%)">Technical Discussion (60%)</option>
+              <option value="Proposal (80%)">Proposal (80%)</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label"><span>Engagement Model</span></label>
+            <select class="input-box" id="opty_project_type">
+              <option value="T&M" selected>T&M (Time & Materials)</option>
+              <option value="FP">Fixed Price (FP)</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label"><span>Deal Value &amp; Currency</span></label>
+            <div style="display:flex; gap:6px;">
+              <input class="input-box" id="opty_deal_size" type="number" style="flex:1;" placeholder="0.00">
+              <input class="input-box" id="opty_currency" type="text" style="width:70px;" value="AED">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label"><span>Technology Architecture</span></label>
+            <input class="input-box" id="opty_tech" type="text" placeholder="e.g. Azure Databricks, Fabric">
+          </div>
+          <div class="field-group form-full">
+            <label class="field-label"><span>Next Commercial Step</span></label>
+            <input class="input-box" id="opty_next_steps" type="text" placeholder="e.g. Architecture review call">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Confirmation Action Bar -->
+    <div class="confirmation-bar">
+      <div id="resumeControls" style="display:flex; gap:8px; flex:1; max-width:480px;">
+        <input class="input-box" id="followUpText" type="text" placeholder="Type missing details to update draft...">
+        <button class="btn-outline" type="button" onclick="submitTextFollowUp()">Submit Follow-Up</button>
+      </div>
+      <div style="margin-left:auto;">
+        <button id="commitBtn" class="btn-primary" type="button" onclick="confirmAndCommitHierarchy()">
+          💾 Confirm &amp; Commit to CRM
+        </button>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<script>
+const API = "http://localhost:8000";
+let recorder = null, chunks = [], currentDraftId = null, activeIntent = "create_lead";
+
+const recordBtn = document.getElementById("record");
+const stopBtn = document.getElementById("stop");
+const statusTxt = document.getElementById("status");
+const transcriptPane = document.getElementById("transcriptPane");
+const transcriptDiv = document.getElementById("transcript");
+const workspacePane = document.getElementById("workspacePane");
+const alertBanner = document.getElementById("alertBanner");
+const alertTitle = document.getElementById("alertTitle");
+const alertText = document.getElementById("alertText");
+const statusBadge = document.getElementById("statusBadge");
+const commitBtn = document.getElementById("commitBtn");
+const draftIdTag = document.getElementById("draftIdTag");
+const workspaceTitle = document.getElementById("workspaceTitle");
+
+// Audio Capture
+recordBtn.onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    chunks = [];
+    recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+    recorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+      await processAudio(blob);
+    };
+    recorder.start();
+    recordBtn.disabled = true;
+    stopBtn.disabled = false;
+    statusTxt.textContent = "Recording...";
+    statusTxt.className = "status live";
+  } catch (err) {
+    alert("Microphone permission failed: " + err.message);
+  }
+};
+
+stopBtn.onclick = () => {
+  if (recorder && recorder.state !== "inactive") {
+    recorder.stop();
+    recordBtn.disabled = false;
+    stopBtn.disabled = true;
+    statusTxt.textContent = "Processing and analyzing intent...";
+    statusTxt.className = "status";
+  }
+};
+
+async function processAudio(blob) {
+  const form = new FormData();
+  form.append("audio", blob, "recording.webm");
+
+  try {
+    const res = await fetch(`${API}/api/voice/process`, { method: "POST", body: form });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Server processing failed.");
+
+    transcriptPane.style.display = "block";
+    transcriptDiv.textContent = `"${data.transcript}"`;
+    renderSeparateForms(data);
+    statusTxt.textContent = "Entities Extracted";
+  } catch (err) {
+    statusTxt.textContent = "Error";
+    alert("Processing failed: " + err.message);
+  }
+}
+
+// Mirror Account Name into Contact Form live
+function onAccountNameChange() {
+  const accVal = document.getElementById("acc_name").value.trim();
+  document.getElementById("con_acc_name").value = accVal;
+  validateMandatory();
+}
+
+// Render Only Relevant Forms Based on Specific Intent
+function renderSeparateForms(res) {
+  workspacePane.style.display = "block";
+  const ext = res.extracted_data || {};
+  const acc = ext.account || {};
+  const con = ext.contact || {};
+  const lead = ext.lead || {};
+  const opty = ext.opportunity || {};
+
+  activeIntent = res.intent || ext.intent || "create_lead";
+  currentDraftId = res.draft_id || null;
+
+  // Strict intent classification
+  const isAccount = activeIntent === "create_account";
+  const isContact = activeIntent === "create_contact";
+  const isLead = activeIntent === "create_lead";
+  const isOpportunity = (
+    activeIntent === "create_opportunity" ||
+    activeIntent === "opportunity" ||
+    activeIntent === "close_won_deal" ||
+    activeIntent === "create_project"
+  );
+
+  // Intent-Driven Visibility Hierarchy:
+  // 1. Account intent: Show Account only
+  // 2. Contact intent: Show Account + Contact
+  // 3. Lead intent: Show Account + Contact + Lead
+  // 4. Opportunity intent: Show Account + Contact + Lead + Opportunity
+  document.getElementById("cardAccount").style.display = "flex";
+  document.getElementById("cardContact").style.display = (!isAccount) ? "flex" : "none";
+  document.getElementById("cardLead").style.display = (isLead || isOpportunity) ? "flex" : "none";
+  document.getElementById("cardOpportunity").style.display = isOpportunity ? "flex" : "none";
+
+  // Dynamic Workspace Title
+  if (isAccount) {
+    workspaceTitle.textContent = "Staged Entity: Account Registration";
+  } else if (isContact) {
+    workspaceTitle.textContent = "Staged Entities: Contact & Associated Account";
+  } else if (isOpportunity) {
+    workspaceTitle.textContent = "Staged Pipeline: Opportunity Hierarchy";
+  } else {
+    workspaceTitle.textContent = "Staged Entities: Lead Ingestion Pipeline";
+  }
+
+  // Populate Form 1: Account
+  document.getElementById("acc_name").value = acc.account_name || "";
+  document.getElementById("acc_manager").value = acc.account_manager || "";
+  document.getElementById("acc_industry").value = acc.industry || "";
+  document.getElementById("acc_region").value = acc.region || "";
+
+  document.getElementById("tag_acc_name").textContent = acc.account_name ? "⚡ Voice" : "";
+  document.getElementById("tag_acc_manager").textContent = acc.account_manager ? "⚡ Voice" : "";
+  document.getElementById("tag_acc_industry").textContent = acc.industry ? "⚡ Voice" : "";
+  document.getElementById("tag_acc_region").textContent = acc.region ? "⚡ Voice" : "";
+
+  // Populate Form 2: Contact (including Associated Account)
+  document.getElementById("con_acc_name").value = acc.account_name || "";
+  document.getElementById("con_name").value = con.contact_name || "";
+  document.getElementById("con_desig").value = con.designation || "";
+  document.getElementById("con_email").value = con.email || "";
+  document.getElementById("con_mobile").value = con.mobile || "";
+
+  document.getElementById("tag_con_name").textContent = con.contact_name ? "⚡ Voice" : "";
+  document.getElementById("tag_con_desig").textContent = con.designation ? "⚡ Voice" : "";
+
+  // Populate Form 3: Lead (if visible)
+  if (isLead || isOpportunity) {
+    const defaultLeadTitle = isOpportunity 
+      ? (opty.opportunity_name || lead.lead_name || `${acc.account_name || 'Commercial'} Deal (Backfilled)`)
+      : (lead.lead_name || "");
+
+    document.getElementById("lead_name").value = defaultLeadTitle;
+    document.getElementById("lead_stage").value = isOpportunity ? "Qualified" : (lead.stage || "Non-Qualified");
+    document.getElementById("lead_type").value = isOpportunity ? "Hot" : (lead.type || "Warm");
+    document.getElementById("lead_service").value = lead.service || opty.service || "";
+    document.getElementById("lead_tech").value = lead.technology || opty.technology || "";
+    document.getElementById("lead_next_steps").value = lead.next_steps || opty.next_steps || "";
+
+    const leadTag = document.getElementById("leadStatusTag");
+    if (isOpportunity) {
+      leadTag.textContent = "⚡ Auto-Backfilled Record";
+      leadTag.style.background = "#E5F5EC";
+      leadTag.style.color = "var(--success)";
+    } else {
+      leadTag.textContent = "Inbound Pipeline";
+      leadTag.style.background = "#FFF9F0";
+      leadTag.style.color = "var(--warning)";
+    }
+  }
+
+  // Populate Form 4: Opportunity (if visible)
+  if (isOpportunity) {
+    document.getElementById("opty_name").value = opty.opportunity_name || lead.lead_name || `${acc.account_name || 'Client'} - Opportunity`;
+    document.getElementById("opty_stage").value = opty.stage || "Discovery (40%)";
+    document.getElementById("opty_project_type").value = opty.project_type || "T&M";
+    document.getElementById("opty_deal_size").value = opty.deal_size || lead.deal_size || "";
+    document.getElementById("opty_currency").value = opty.currency || lead.currency || "AED";
+    document.getElementById("opty_tech").value = opty.technology || lead.technology || "";
+    document.getElementById("opty_next_steps").value = opty.next_steps || lead.next_steps || "";
+
+    document.getElementById("tag_opty_name").textContent = (opty.opportunity_name || lead.lead_name) ? "⚡ Voice" : "";
+  }
+
+  // Draft Banner State
+  draftIdTag.textContent = currentDraftId ? `Draft Record #${currentDraftId}` : "";
+  if (res.status === "draft_saved_incomplete") {
+    statusBadge.textContent = "Incomplete Draft";
+    statusBadge.className = "badge badge-draft";
+    alertBanner.style.display = "block";
+    alertBanner.className = "alert-banner";
+    alertTitle.textContent = "⚠️ Missing Mandatory Entity Fields";
+    alertText.textContent = res.clarification_prompt || "Please complete the highlighted mandatory inputs.";
+  } else {
+    statusBadge.textContent = "Staged for Sales Review";
+    statusBadge.className = "badge badge-review";
+    alertBanner.style.display = "block";
+    alertBanner.className = "alert-banner review";
+    alertTitle.textContent = "📋 Staged Records Ready";
+    alertText.textContent = "Verify or edit the extracted details in the cards above, then click confirm to persist.";
+  }
+
+  validateMandatory();
+}
+
+// Client Validation Across Visible Forms
+function validateMandatory() {
+  const accVal = document.getElementById("acc_name").value.trim();
+  const conVal = document.getElementById("con_name").value.trim();
+  const accInput = document.getElementById("acc_name");
+  const conInput = document.getElementById("con_name");
+  const accHelp = document.getElementById("acc_name_help");
+  const conHelp = document.getElementById("con_name_help");
+
+  let isAccMissing = !accVal;
+  if (isAccMissing) {
+    accInput.classList.add("input-missing");
+    accHelp.textContent = "Mandatory: Company / Account name is required.";
+    accHelp.className = "field-helper helper-missing";
+  } else {
+    accInput.classList.remove("input-missing");
+    accHelp.textContent = "Legal entity name.";
+    accHelp.className = "field-helper";
+  }
+
+  // If intent is purely account, contact isn't mandatory
+  if (activeIntent === "create_account") {
+    conInput.classList.remove("input-missing");
+    commitBtn.disabled = isAccMissing;
+    return;
+  }
+
+  let isConMissing = !conVal;
+  if (isConMissing) {
+    conInput.classList.add("input-missing");
+    conHelp.textContent = "Mandatory: Contact stakeholder name is required.";
+    conHelp.className = "field-helper helper-missing";
+  } else {
+    conInput.classList.remove("input-missing");
+    conHelp.textContent = "Primary client contact or decision maker.";
+    conHelp.className = "field-helper";
+  }
+
+  commitBtn.disabled = isAccMissing || isConMissing;
+}
+
+// Resume Missing Info via Text
+async function submitTextFollowUp() {
+  if (!currentDraftId) return;
+  const txt = document.getElementById("followUpText").value.trim();
+  if (!txt) return;
+
+  const form = new FormData();
+  form.append("additional_text", txt);
+
+  try {
+    statusTxt.textContent = "Updating draft...";
+    const res = await fetch(`${API}/api/voice/draft/${currentDraftId}/resume`, {
+      method: "POST",
+      body: form
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Update failed.");
+
+    document.getElementById("followUpText").value = "";
+    renderSeparateForms(data);
+    statusTxt.textContent = "Draft Updated";
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+}
+
+// Commit Synchronized Payload to PostgreSQL
+async function confirmAndCommitHierarchy() {
+  const payload = {
+    draft_id: currentDraftId,
+    intent: activeIntent,
+    account: {
+      account_name: document.getElementById("acc_name").value.trim(),
+      account_manager: document.getElementById("acc_manager").value.trim(),
+      industry: document.getElementById("acc_industry").value.trim(),
+      region: document.getElementById("acc_region").value.trim(),
+    },
+    contact: {
+      contact_name: document.getElementById("con_name").value.trim(),
+      designation: document.getElementById("con_desig").value.trim(),
+      email: document.getElementById("con_email").value.trim(),
+      mobile: document.getElementById("con_mobile").value.trim(),
+    },
+    lead: {
+      lead_name: document.getElementById("lead_name").value.trim(),
+      deal_size: parseFloat(document.getElementById("opty_deal_size").value) || null,
+      currency: document.getElementById("opty_currency").value,
+      type: document.getElementById("lead_type").value,
+      stage: document.getElementById("lead_stage").value,
+      service: document.getElementById("lead_service").value,
+      technology: document.getElementById("lead_tech").value,
+      next_steps: document.getElementById("lead_next_steps").value,
+    },
+    opportunity: {
+      opportunity_name: document.getElementById("opty_name").value.trim(),
+      deal_size: parseFloat(document.getElementById("opty_deal_size").value) || null,
+      currency: document.getElementById("opty_currency").value,
+      stage: document.getElementById("opty_stage").value,
+      project_type: document.getElementById("opty_project_type").value,
+      technology: document.getElementById("opty_tech").value,
+      next_steps: document.getElementById("opty_next_steps").value,
+    }
+  };
+
+  try {
+    statusTxt.textContent = "Writing to database...";
+    const res = await fetch(`${API}/api/voice/commit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Transaction failed.");
+
+    const rec = data.created_records || {};
+    statusBadge.textContent = "Committed to PostgreSQL";
+    statusBadge.className = "badge badge-committed";
+    alertBanner.style.display = "block";
+    alertBanner.className = "alert-banner success";
+    alertTitle.textContent = "✅ Record Confirmed & Committed";
+    
+    if (activeIntent === "create_opportunity") {
+      alertText.textContent = `Created Account "${rec.account_name}", Contact "${rec.contact_name}", backfilled Lead #${rec.lead_id}, and Opportunity #${rec.opportunity_id} (${rec.currency} ${rec.deal_size}).`;
+    } else if (activeIntent === "create_contact") {
+      alertText.textContent = `Created Contact "${rec.contact_name}" linked directly to Account "${rec.account_name}".`;
+    } else if (activeIntent === "create_account") {
+      alertText.textContent = `Created Account "${rec.account_name}".`;
+    } else {
+      alertText.textContent = `Created Account "${rec.account_name}", Contact "${rec.contact_name}", and Lead #${rec.lead_id}.`;
+    }
+
+    commitBtn.disabled = true;
+    statusTxt.textContent = "Complete";
+  } catch (err) {
+    statusTxt.textContent = "Error";
+    alert("Commit failed: " + err.message);
+  }
+}
+</script>
+</body>
+</html>
