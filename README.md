@@ -49,17 +49,11 @@ uvicorn main:app --reload --port 8000
 Install FFmpeg separately because original Whisper requires it.
 
 ### 3. Frontend
-
-Open `frontend/index.html` through a local static server:
-
-```bash
-cd frontend
-python -m http.server 5173
-```
+Open in browser 
 
 Then open:
 
-http://localhost:5173
+(http://localhost:8000/page/account)
 
 ## Example
 
