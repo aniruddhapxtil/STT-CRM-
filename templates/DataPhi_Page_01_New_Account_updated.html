@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DataPhi CRM — Accounts</title>
+<link rel="stylesheet" href="/static/css/voice_modal.css">
+<style>
+  :root {
+    --purple: #6C5CE7; --purple-dark: #4B3FC4; --purple-light: #F3F1FD;
+    --ink: #20242C; --mute: #666C79; --border: #E2E4EA; --bg: #F7F8FA;
+    --success: #1E8E5A; --success-light: #E5F5EC;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); min-width: 1180px; }
+
+  /* ---------- top nav ---------- */
+  .topnav { height: 60px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; justify-content: space-between; }
+  .topnav .left { display: flex; align-items: center; gap: 34px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--purple), var(--purple-dark)); display: flex; align-items: center; justify-content: center; }
+  .brand b { font-size: 15.5px; font-weight: 800; }
+  .navlinks { display: flex; gap: 4px; }
+  .navlinks a { text-decoration: none; color: var(--mute); font-size: 13.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; }
+  .navlinks a.active { color: var(--purple-dark); background: var(--purple-light); }
+  .topnav .right { display: flex; align-items: center; gap: 16px; }
+  .icon-btn { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--mute); cursor: pointer; }
+  .icon-btn:hover { background: #F1F2F5; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: #C9CCE8; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--purple-dark); }
+
+  /* ---------- page header ---------- */
+  .pageheader { background: #fff; border-bottom: 1px solid var(--border); padding: 18px 40px; display: flex; align-items: center; justify-content: space-between; }
+  .crumb { font-size: 12px; color: var(--mute); margin-bottom: 6px; }
+  .crumb b { color: var(--ink); }
+  .pageheader h1 { font-size: 22px; font-weight: 800; margin: 0; }
+  .pageheader .sub { font-size: 12.5px; color: var(--mute); margin-top: 3px; }
+  .header-actions { display: flex; gap: 10px; }
+  .btn { padding: 10px 20px; font-size: 13.5px; font-weight: 700; border-radius: 8px; cursor: pointer; border: none; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-ghost { background: #fff; color: var(--mute); border: 1.3px solid var(--border); }
+  .btn-ghost:hover { background: #F7F8FA; }
+  .btn-primary { background: var(--purple); color: #fff; }
+  .btn-primary:hover { background: var(--purple-dark); }
+  .btn-outline { background: #fff; color: var(--purple-dark); border: 1.3px solid var(--purple); padding: 8px 16px; font-size: 12.5px; font-weight: 700; border-radius: 8px; cursor: pointer; }
+  .btn-outline:hover { background: var(--purple-light); }
+
+  /* ---------- table registry view ---------- */
+  .registry-wrap { max-width: 1400px; margin: 28px auto; padding: 0 40px 60px; }
+  .table-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 24px; }
+  .table-toolbar { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #FAFBFD; gap: 16px; flex-wrap: wrap; }
+  .search-box { position: relative; flex: 1; max-width: 480px; }
+  .search-box input { width: 100%; padding: 10px 14px 10px 38px; font-size: 13.5px; border: 1.3px solid var(--border); border-radius: 8px; outline: none; background: #fff; font-family: inherit; }
+  .search-box input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(108,92,231,0.12); }
+  .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--mute); }
+
+  .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+  .data-table th { background: #F8F9FB; color: var(--mute); padding: 13px 18px; font-weight: 700; border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .data-table td { padding: 13px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .data-table tbody tr { cursor: pointer; transition: background 0.15s; }
+  .data-table tbody tr:hover { background: #F8F9FD; }
+  .data-table tbody tr.selected { background: #F1EFFE; }
+
+  .badge-id { font-family: monospace; font-size: 12px; font-weight: 700; color: var(--purple-dark); background: var(--purple-light); padding: 3px 8px; border-radius: 6px; }
+  .badge-pill { font-size: 11.5px; font-weight: 700; background: #F1F2F5; color: var(--ink); padding: 3px 8px; border-radius: 12px; }
+
+  /* ---------- hierarchy view ---------- */
+  .hierarchy-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); padding: 24px; animation: fadeIn 0.2s ease-in-out; }
+  .hierarchy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 18px; }
+  .sub-table-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .sub-table-header { background: #FAFBFD; padding: 12px 18px; border-bottom: 1px solid var(--border); font-weight: 800; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+
+  /* ---------- layout (form view) ---------- */
+  .wrap { max-width: 1400px; margin: 28px auto; padding: 0 40px 60px; display: flex; align-items: flex-start; }
+  .main { flex: 1; min-width: 0; margin-right: 24px; }
+  .sidebar { width: 340px; flex-shrink: 0; }
+
+  .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 26px 30px; margin-bottom: 22px; }
+  .panel h2 { font-size: 14px; font-weight: 800; margin: 0 0 4px; }
+  .panel .panel-sub { font-size: 12px; color: var(--mute); margin: 0 0 18px; }
+
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+  .field label .req { color: #D14545; margin-left: 2px; }
+  .field .helper { font-size: 11px; color: var(--mute); margin-top: 5px; }
+  .field input[type="text"], .field select { width: 100%; padding: 10px 12px; font-size: 14px; color: var(--ink); border: 1.3px solid var(--border); border-radius: 8px; background: #fff; font-family: inherit; outline: none; }
+  .field input[type="text"]:focus, .field select:focus { border-color: var(--purple); }
+  .field select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23666C79' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>"); background-repeat: no-repeat; background-position: right 12px center; }
+
+  .row { display: flex; margin: 0 -9px; }
+  .row .field { padding: 0 9px; margin-bottom: 18px; }
+  .row.cols-3 .field { width: 33.333%; }
+  .row.cols-2 .field { width: 50%; }
+
+  .section-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 22px; }
+
+  .empty-block { background: #FAFAFB; border: 1.5px dashed var(--border); border-radius: 10px; padding: 26px; text-align: center; }
+  .empty-icon { font-size: 26px; opacity: .55; margin-bottom: 6px; }
+  .empty-text { font-size: 12.5px; color: var(--mute); margin-bottom: 14px; }
+
+  /* ---------- sidebar ---------- */
+  .side-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 20px; }
+  .side-card.voice { background: linear-gradient(160deg, var(--purple-light), #fff); border-color: #DAD5F7; }
+  .side-card h3 { font-size: 13px; font-weight: 800; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+  .side-card p { font-size: 12px; color: var(--mute); line-height: 1.6; margin: 6px 0 0; }
+  .mic-btn { width: 52px; height: 52px; border-radius: 50%; border: none; background: var(--purple); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 6px rgba(108,92,231,0.14); margin: 14px auto 10px; transition: transform 0.2s, box-shadow 0.2s; }
+  .voice-example { background: #fff; border: 1px dashed #C9CCE8; border-radius: 8px; padding: 10px 12px; font-size: 11.5px; color: var(--purple-dark); font-style: italic; margin-top: 12px; }
+  .info-row { display: flex; justify-content: space-between; font-size: 12px; padding: 7px 0; border-bottom: 1px solid #F1F2F5; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row span:first-child { color: var(--mute); }
+  .info-row span:last-child { font-weight: 700; color: #9AA0AC; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="left">
+    <div class="brand">
+      <div class="mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="2"/><path d="M9 8v8l6-4-6-4z" fill="#fff"/></svg>
+      </div>
+      <b>DataPhi CRM</b>
+    </div>
+    <div class="navlinks">
+      <a href="/page/voice" style="color: #6C5CE7; background: #F3F1FD; font-weight: 800;">🎙 Voice Station</a>
+      <a href="/page/account" class="active">Accounts</a>
+      <a href="/page/subsidiary">Subsidiaries</a>
+      <a href="/page/contact">Contacts</a>
+      <a href="/page/lead">Leads</a>
+      <a href="/page/opportunity">Opportunities</a>
+      <a href="/page/project">Projects</a>
+      <a href="/page/activity">Activity</a>
+    </div>
+  </div>
+  <div class="right">
+    <div class="icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><line x1="21" y1="21" x2="16.5" y2="16.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    <div class="icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.7 21a2 2 0 0 1-3.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    <div class="avatar">AK</div>
+  </div>
+</div>
+
+<!-- ================================================================= -->
+<!-- SECTION 1: HEADER (DYNAMIC FOR TABLE VS FORM VIEW)                -->
+<!-- ================================================================= -->
+<div class="pageheader">
+  <div>
+    <div class="crumb" id="headerCrumb">Accounts &nbsp;/&nbsp; <b>Registry</b></div>
+    <h1 id="headerTitle">Accounts Directory</h1>
+    <div class="sub" id="headerSub">Enterprise clients, operating branches, and key contacts</div>
+  </div>
+  <div class="header-actions">
+    <!-- Visible in Registry Mode -->
+    <button type="button" class="btn btn-primary" id="btnShowCreateForm">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Create Account
+    </button>
+    <!-- Visible in Form Mode -->
+    <button type="button" class="btn btn-ghost" id="btnCancelForm" style="display:none;">Cancel &amp; View Directory</button>
+    <button type="button" class="btn btn-primary" id="saveAccountBtn" style="display:none;">Save Account</button>
+  </div>
+</div>
+
+<!-- ================================================================= -->
+<!-- SECTION 2: SAVED ACCOUNTS TABLE & SEARCH VIEW (DEFAULT)           -->
+<!-- ================================================================= -->
+<div class="registry-wrap" id="registryViewSection">
+  
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="accountSearchInput" placeholder="Search accounts by name, manager, region, or industry...">
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <span style="font-size: 12.5px; color: var(--mute);" id="recordCountLabel">Loading accounts...</span>
+        <button class="btn btn-ghost" style="padding: 8px 14px;" onclick="loadSavedAccounts()">
+          ↻ Refresh
+        </button>
+      </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 100px;">Account ID</th>
+            <th>Account Name</th>
+            <th>Account Manager</th>
+            <th>Region</th>
+            <th>Industry</th>
+            <th style="text-align: center;">Subsidiaries</th>
+            <th style="text-align: center;">Contacts</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="accountsTableBody">
+          <tr>
+            <td colspan="8" style="padding: 32px; text-align: center; color: var(--mute);">Loading accounts database...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Detail Sub-Grid (Populated on row selection) -->
+  <div class="hierarchy-card" id="accountHierarchyCard" style="display:none;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--ink);">
+          Enterprise Hierarchy for <span id="selectedAccountTitle" style="color: var(--purple-dark);"></span>
+        </h3>
+        <p style="margin: 4px 0 0; font-size: 12px; color: var(--mute);">Direct branches and associated stakeholders linked to this organization</p>
+      </div>
+      <span class="badge-id" id="selectedAccountIdBadge"></span>
+    </div>
+
+    <div class="hierarchy-grid">
+      <!-- Subsidiaries List -->
+      <div class="sub-table-wrap">
+        <div class="sub-table-header">
+          <span>Operating Subsidiaries</span>
+          <button class="btn-outline" id="addSubsidiaryForAccBtn">+ Add Subsidiary</button>
+        </div>
+        <table class="data-table" style="font-size: 12.5px;">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Subsidiary Name</th>
+              <th>Region</th>
+            </tr>
+          </thead>
+          <tbody id="subsidiariesTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Contacts List -->
+      <div class="sub-table-wrap">
+        <div class="sub-table-header">
+          <span>Stakeholder Contacts</span>
+          <button class="btn-outline" id="addContactForAccBtn">+ Add Contact</button>
+        </div>
+        <table class="data-table" style="font-size: 12.5px;">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Contact Name</th>
+              <th>Designation</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody id="contactsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================================================================= -->
+<!-- SECTION 3: ACCOUNT CREATION FORM VIEW (TOGGLED)                   -->
+<!-- ================================================================= -->
+<div class="wrap" id="accountFormSection" style="display: none;">
+
+  <div class="main">
+
+    <form id="accountForm" onsubmit="return false;">
+      <div class="panel">
+        <h2>Company Information</h2>
+        <p class="panel-sub">Core details identifying this account.</p>
+
+        <div class="field">
+          <label>Account Name<span class="req">*</span></label>
+          <input type="text" id="account_name" name="account_name" placeholder="e.g. Acme Holdings" required>
+        </div>
+
+        <div class="row cols-3">
+          <div class="field">
+            <label>Account Manager</label>
+            <input type="text" id="account_manager" name="account_manager" placeholder="e.g. Sara Khan">
+            <div class="helper">The client's own manager — not a DataPhi user.</div>
+          </div>
+          <div class="field">
+            <label>Account Region</label>
+            <select id="region" name="region">
+              <option value="">Select region</option>
+              <option value="Dubai">Dubai</option>
+              <option value="Abu Dhabi">Abu Dhabi</option>
+              <option value="Sharjah">Sharjah</option>
+              <option value="KSA">KSA</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Industry<span class="req">*</span></label>
+            <select id="industry" name="industry" required>
+              <option value="">Select industry</option>
+              <option value="Retail">Retail</option>
+              <option value="Real Estate, Construction &amp; Engineering">Real Estate, Construction &amp; Engineering</option>
+              <option value="Conglomerate">Conglomerate</option>
+              <option value="F&amp;B / FMCG">F&amp;B / FMCG</option>
+              <option value="Automotive">Automotive</option>
+              <option value="Manufacturing">Manufacturing</option>
+              <option value="BFSI">BFSI</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Logistics">Logistics</option>
+              <option value="Aviation">Aviation</option>
+              <option value="Public Sector">Public Sector</option>
+              <option value="Telco">Telco</option>
+              <option value="E-Com">E-Com</option>
+              <option value="Facilities Management">Facilities Management</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Address</h2>
+        <p class="panel-sub">Optional — add a second address if this account operates from more than one location.</p>
+
+        <div class="row cols-2">
+          <div class="field">
+            <label>Primary Address</label>
+            <input type="text" id="primary_address" name="primary_address" placeholder="e.g. Office 1402, Business Bay Tower, Dubai">
+          </div>
+          <div class="field">
+            <label>Secondary Address</label>
+            <input type="text" id="secondary_address" name="secondary_address" placeholder="Optional">
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Subsidiaries</h2>
+        <p class="panel-sub">Linked branches under this account — added as a follow-on step once the account is saved.</p>
+        <div class="empty-block">
+          <div class="empty-icon">🏬</div>
+          <div class="empty-text">No subsidiaries linked yet</div>
+          <button type="button" class="btn btn-outline" onclick="window.location.href='/page/subsidiary'">🏬 + Add Subsidiary</button>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Contacts</h2>
+        <p class="panel-sub">People linked to this account — added as a follow-on step once the account is saved.</p>
+        <div class="empty-block">
+          <div class="empty-icon">👤</div>
+          <div class="empty-text">No contacts linked yet</div>
+          <button type="button" class="btn btn-outline" onclick="window.location.href='/page/contact'">👤 + Add Contact</button>
+        </div>
+      </div>
+    </form>
+
+  </div>
+
+  <div class="sidebar">
+
+    <div class="side-card voice">
+      <h3>🎙 Voice Entry</h3>
+      <p>Prefer to speak instead of type? Record the account details and review before saving.</p>
+      <button type="button" class="mic-btn" aria-label="Start recording" title="Click to record account details">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="#fff" stroke-width="2"/><path d="M6 11a6 6 0 0 0 12 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="19" x2="12" y2="22" stroke="#fff" stroke-width="2"/></svg>
+      </button>
+      <div class="voice-example">"Create account for Acme Holdings, Dubai, retail industry, manager Sara Khan."</div>
+      <p>Transcribed by Whisper, extracted by LFM2.5 — review details in the confirmation modal before commit.</p>
+    </div>
+
+    <div class="side-card">
+      <h3>About this record</h3>
+      <div class="info-row"><span>Account ID</span><span id="display_account_id">Auto-generated</span></div>
+      <div class="info-row"><span>Created By</span><span>Ashwin Kumar</span></div>
+      <div class="info-row"><span>Creation Date</span><span>Today</span></div>
+      <div class="info-row"><span>Last Update Date</span><span>Today</span></div>
+      <div class="info-row"><span>Attribute 1–10</span><span>Reserved</span></div>
+      <p>Reserved Attribute fields are not shown on this form — they have no defined use yet.</p>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="/static/js/voice_widget.js"></script>
+<script>
+  let accountsDataCache = [];
+  let selectedAccountId = null;
+
+  // View Switching Logic
+  function showCreateForm() {
+    document.getElementById('registryViewSection').style.display = 'none';
+    document.getElementById('accountFormSection').style.display = 'flex';
+    document.getElementById('btnShowCreateForm').style.display = 'none';
+    document.getElementById('btnCancelForm').style.display = 'inline-flex';
+    document.getElementById('saveAccountBtn').style.display = 'inline-flex';
+
+    document.getElementById('headerCrumb').innerHTML = 'Accounts &nbsp;/&nbsp; <b>New Account</b>';
+    document.getElementById('headerTitle').textContent = 'New Account';
+    document.getElementById('headerSub').textContent = 'Customer & Account Setup — Step 1 of 4';
+    document.getElementById('account_name').focus();
+  }
+
+  function showRegistryView() {
+    document.getElementById('registryViewSection').style.display = 'block';
+    document.getElementById('accountFormSection').style.display = 'none';
+    document.getElementById('btnShowCreateForm').style.display = 'inline-flex';
+    document.getElementById('btnCancelForm').style.display = 'none';
+    document.getElementById('saveAccountBtn').style.display = 'none';
+
+    document.getElementById('headerCrumb').innerHTML = 'Accounts &nbsp;/&nbsp; <b>Registry</b>';
+    document.getElementById('headerTitle').textContent = 'Accounts Directory';
+    document.getElementById('headerSub').textContent = 'Enterprise clients, operating branches, and key contacts';
+  }
+
+  document.getElementById('btnShowCreateForm').addEventListener('click', showCreateForm);
+  document.getElementById('btnCancelForm').addEventListener('click', showRegistryView);
+
+  // Fetch Accounts from Backend API
+  async function loadSavedAccounts() {
+    try {
+      const res = await fetch('/api/accounts/overview');
+      if (!res.ok) throw new Error('Failed to retrieve accounts.');
+      accountsDataCache = await res.json();
+      renderAccountsTable(accountsDataCache);
+    } catch (err) {
+      document.getElementById('accountsTableBody').innerHTML = `
+        <tr><td colspan="8" style="padding: 28px; text-align: center; color: #ef4444;">Failed to load accounts: ${err.message}</td></tr>
+      `;
+      document.getElementById('recordCountLabel').textContent = 'Error connecting to database';
+    }
+  }
+
+  // Render Table
+  function renderAccountsTable(accounts) {
+    const tbody = document.getElementById('accountsTableBody');
+    document.getElementById('recordCountLabel').textContent = `${accounts.length} ${accounts.length === 1 ? 'account' : 'accounts'} registered`;
+
+    if (!accounts.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="padding: 32px; text-align: center; color: var(--mute);">No accounts registered yet. Click <b>"Create Account"</b> to add your first client.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = accounts.map(acc => {
+      const isSelected = acc.id === selectedAccountId;
+      return `
+        <tr class="${isSelected ? 'selected' : ''}" onclick="selectAccountRow(${acc.id})">
+          <td><span class="badge-id">ACC-${String(acc.id).padStart(3, '0')}</span></td>
+          <td style="font-weight: 700; color: var(--ink);">${acc.account_name}</td>
+          <td style="color: var(--mute);">${acc.account_manager}</td>
+          <td><span class="badge-pill">${acc.region}</span></td>
+          <td style="color: var(--mute); font-size: 13px;">${acc.industry}</td>
+          <td style="text-align: center;"><span class="badge-pill">${acc.subsidiaries.length}</span></td>
+          <td style="text-align: center;"><span class="badge-pill">${acc.contacts.length}</span></td>
+          <td style="text-align: right;">
+            <button class="btn btn-ghost" style="padding: 5px 10px; font-size: 12px;" onclick="event.stopPropagation(); selectAccountRow(${acc.id})">
+              Explore ➔
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Real-time Search Filtering
+  document.getElementById('accountSearchInput').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    if (!query) {
+      renderAccountsTable(accountsDataCache);
+      return;
+    }
+    const filtered = accountsDataCache.filter(acc => 
+      acc.account_name.toLowerCase().includes(query) ||
+      (acc.account_manager && acc.account_manager.toLowerCase().includes(query)) ||
+      (acc.region && acc.region.toLowerCase().includes(query)) ||
+      (acc.industry && acc.industry.toLowerCase().includes(query)) ||
+      String(acc.id).includes(query)
+    );
+    renderAccountsTable(filtered);
+  });
+
+  // Select Account and Show Hierarchy Grid
+  function selectAccountRow(accountId) {
+    selectedAccountId = accountId;
+    renderAccountsTable(accountsDataCache);
+
+    const account = accountsDataCache.find(a => a.id === accountId);
+    if (!account) return;
+
+    const card = document.getElementById('accountHierarchyCard');
+    card.style.display = 'block';
+    document.getElementById('selectedAccountTitle').textContent = account.account_name;
+    document.getElementById('selectedAccountIdBadge').textContent = `ACC-${String(account.id).padStart(3, '0')}`;
+
+    document.getElementById('addSubsidiaryForAccBtn').onclick = () => {
+      window.location.href = `/page/subsidiary?account_id=${account.id}&account_name=${encodeURIComponent(account.account_name)}`;
+    };
+    document.getElementById('addContactForAccBtn').onclick = () => {
+      window.location.href = `/page/contact?account_id=${account.id}&account_name=${encodeURIComponent(account.account_name)}`;
+    };
+
+    // Subsidiaries List
+    const subBody = document.getElementById('subsidiariesTableBody');
+    if (!account.subsidiaries.length) {
+      subBody.innerHTML = `<tr><td colspan="3" style="padding: 16px; text-align: center; color: var(--mute);">No subsidiaries registered for this account.</td></tr>`;
+    } else {
+      subBody.innerHTML = account.subsidiaries.map(sub => `
+        <tr>
+          <td><span class="badge-id">SUB-${String(sub.id).padStart(3, '0')}</span></td>
+          <td style="font-weight: 700; color: var(--ink);">${sub.subsidiary_name}</td>
+          <td><span class="badge-pill">${sub.region}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // Contacts List
+    const conBody = document.getElementById('contactsTableBody');
+    if (!account.contacts.length) {
+      conBody.innerHTML = `<tr><td colspan="4" style="padding: 16px; text-align: center; color: var(--mute);">No contacts registered for this account.</td></tr>`;
+    } else {
+      conBody.innerHTML = account.contacts.map(con => `
+        <tr>
+          <td><span class="badge-id">CON-${String(con.id).padStart(3, '0')}</span></td>
+          <td style="font-weight: 700; color: var(--ink);">${con.contact_name}</td>
+          <td style="color: var(--mute);">${con.designation}</td>
+          <td style="color: var(--mute); font-family: monospace; font-size: 11.5px;">${con.email}</td>
+        </tr>
+      `).join('');
+    }
+
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Save Account Handler
+  document.getElementById('saveAccountBtn').addEventListener('click', async () => {
+    const account_name = document.getElementById('account_name').value.trim();
+    const industry = document.getElementById('industry').value;
+
+    if (!account_name) {
+      alert("Please enter the Account Name.");
+      document.getElementById('account_name').focus();
+      return;
+    }
+    if (!industry) {
+      alert("Please select an Industry.");
+      document.getElementById('industry').focus();
+      return;
+    }
+
+    const payload = {
+      account_name: account_name,
+      account_manager: document.getElementById('account_manager').value.trim(),
+      region: document.getElementById('region').value,
+      industry: industry,
+      primary_address: document.getElementById('primary_address').value.trim(),
+      secondary_address: document.getElementById('secondary_address').value.trim()
+    };
+
+    try {
+      const res = await fetch('/api/account/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        alert(`Account saved successfully with ID: ACC-${String(data.account_id).padStart(3, '0')}`);
+        document.getElementById('accountForm').reset();
+        await loadSavedAccounts();
+        selectAccountRow(data.account_id);
+        showRegistryView();
+      } else {
+        alert("Failed to save account: " + (data.detail || "Server error"));
+      }
+    } catch (err) {
+      alert("Connection error: " + err.message);
+    }
+  });
+
+  // Initial Load
+  document.addEventListener('DOMContentLoaded', () => {
+    loadSavedAccounts();
+  });
+</script>
+</body>
+</html>

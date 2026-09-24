@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DataPhi CRM — Activity</title>
+<link rel="stylesheet" href="/static/css/voice_modal.css">
+<style>
+  :root { --accent: #1E8E5A; --accent-dark: #175C3E; --accent-light: #E5F5EC; --ink: #20242C; --mute: #666C79; --border: #E2E4EA; --bg: #F7F8FA; }
+  * { box-sizing: border-box; } html, body { margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); min-width: 1180px; }
+  .topnav { height: 60px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; justify-content: space-between; }
+  .topnav .left { display: flex; align-items: center; gap: 34px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); display: flex; align-items: center; justify-content: center; }
+  .brand b { font-size: 15.5px; font-weight: 800; }
+  .navlinks { display: flex; gap: 4px; }
+  .navlinks a { text-decoration: none; color: var(--mute); font-size: 13.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; }
+  .navlinks a.active { color: var(--accent-dark); background: var(--accent-light); }
+  .topnav .right { display: flex; align-items: center; gap: 16px; }
+  .icon-btn { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--mute); cursor: pointer; }
+  .icon-btn:hover { background: #F1F2F5; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: #B7E3C9; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--accent-dark); }
+  .pageheader { background: #fff; border-bottom: 1px solid var(--border); padding: 18px 40px; display: flex; align-items: center; justify-content: space-between; }
+  .crumb { font-size: 12px; color: var(--mute); margin-bottom: 6px; } .crumb b { color: var(--ink); }
+  .pageheader h1 { font-size: 22px; font-weight: 800; margin: 0; }
+  .pageheader .sub { font-size: 12.5px; color: var(--mute); margin-top: 3px; }
+  .header-actions { display: flex; gap: 10px; }
+  .btn { padding: 10px 20px; font-size: 13.5px; font-weight: 700; border-radius: 8px; cursor: pointer; border: none; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-ghost { background: #fff; color: var(--mute); border: 1.3px solid var(--border); }
+  .btn-ghost:hover { background: #F7F8FA; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-dark); }
+
+  .registry-wrap { max-width: 1400px; margin: 28px auto; padding: 0 40px 60px; }
+  .table-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 24px; }
+  .table-toolbar { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #FAFBFD; gap: 16px; flex-wrap: wrap; }
+  .search-box { position: relative; flex: 1; max-width: 480px; }
+  .search-box input { width: 100%; padding: 10px 14px 10px 38px; font-size: 13.5px; border: 1.3px solid var(--border); border-radius: 8px; outline: none; background: #fff; font-family: inherit; }
+  .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(30,142,90,0.12); }
+  .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--mute); }
+  .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+  .data-table th { background: #F8F9FB; color: var(--mute); padding: 13px 18px; font-weight: 700; border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .data-table td { padding: 13px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .data-table tbody tr:hover { background: #F8F9FD; }
+  .badge-id { font-family: monospace; font-size: 12px; font-weight: 700; color: var(--accent-dark); background: var(--accent-light); padding: 3px 8px; border-radius: 6px; }
+  .badge-pill { font-size: 11.5px; font-weight: 700; background: #F1F2F5; color: var(--ink); padding: 3px 8px; border-radius: 12px; }
+
+  .wrap { max-width: 1400px; margin: 28px auto; padding: 0 40px 60px; display: flex; align-items: flex-start; }
+  .main { flex: 1; min-width: 0; margin-right: 24px; } .sidebar { width: 340px; flex-shrink: 0; }
+  .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 26px 30px; margin-bottom: 22px; }
+  .panel h2 { font-size: 14px; font-weight: 800; margin: 0 0 4px; }
+  .panel .panel-sub { font-size: 12px; color: var(--mute); margin: 0 0 18px; }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+  .field label .req { color: #D14545; margin-left: 2px; }
+  .field .helper { font-size: 11px; color: var(--mute); margin-top: 5px; }
+  .field input[type="text"], .field select, .field textarea { width: 100%; padding: 10px 12px; font-size: 14px; color: var(--ink); border: 1.3px solid var(--border); border-radius: 8px; background: #fff; font-family: inherit; outline: none; }
+  .field textarea { resize: vertical; min-height: 70px; }
+  .field input[type="text"]:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23666C79' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>"); background-repeat: no-repeat; background-position: right 12px center; }
+  .row { display: flex; margin: 0 -9px; } .row .field { padding: 0 9px; margin-bottom: 18px; }
+  .row.cols-2 .field { width: 50%; }
+  .section-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 22px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .chip { padding: 8px 15px; border-radius: 20px; border: 1.3px solid var(--border); font-size: 12.5px; font-weight: 700; color: var(--mute); cursor: pointer; background: #fff; user-select: none; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .side-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 20px; }
+  .side-card.voice { background: linear-gradient(160deg, var(--accent-light), #fff); border-color: #B7E3C9; }
+  .side-card h3 { font-size: 13px; font-weight: 800; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+  .side-card p { font-size: 12px; color: var(--mute); line-height: 1.6; margin: 6px 0 0; }
+  .mic-btn { width: 52px; height: 52px; border-radius: 50%; border: none; background: var(--accent); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 6px rgba(30,142,90,0.14); margin: 14px auto 10px; transition: transform 0.2s, box-shadow 0.2s; }
+  .voice-example { background: #fff; border: 1px dashed #A9DDC2; border-radius: 8px; padding: 10px 12px; font-size: 11.5px; color: var(--accent-dark); font-style: italic; margin-top: 12px; }
+  .info-row { display: flex; justify-content: space-between; font-size: 12px; padding: 7px 0; border-bottom: 1px solid #F1F2F5; } .info-row:last-child { border-bottom: none; }
+  .info-row span:first-child { color: var(--mute); } .info-row span:last-child { font-weight: 700; color: #9AA0AC; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="left">
+    <div class="brand"><div class="mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="2"/><path d="M9 8v8l6-4-6-4z" fill="#fff"/></svg></div><b>DataPhi CRM</b></div>
+    <div class="navlinks">
+      <a href="/page/voice">🎙 Voice Station</a>
+      <a href="/page/account">Accounts</a>
+      <a href="/page/subsidiary">Subsidiaries</a>
+      <a href="/page/contact">Contacts</a>
+      <a href="/page/lead">Leads</a>
+      <a href="/page/opportunity">Opportunities</a>
+      <a href="/page/project">Projects</a>
+      <a href="/page/activity" class="active">Activity</a>
+    </div>
+  </div>
+  <div class="right">
+    <div class="icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><line x1="21" y1="21" x2="16.5" y2="16.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    <div class="icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.7 21a2 2 0 0 1-3.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    <div class="avatar">AK</div>
+  </div>
+</div>
+
+<div class="pageheader">
+  <div>
+    <div class="crumb" id="headerCrumb">Activity &nbsp;/&nbsp; <b>Registry</b></div>
+    <h1 id="headerTitle">Activity Timeline</h1>
+    <div class="sub" id="headerSub">Every interaction logged across all CRM entities</div>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="btn btn-primary" id="btnShowCreateForm">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Log Activity
+    </button>
+    <button type="button" class="btn btn-ghost" id="btnCancelForm" style="display:none;">Cancel &amp; View Timeline</button>
+    <button type="button" class="btn btn-primary" id="saveActivityBtn" style="display:none;">Save Activity</button>
+  </div>
+</div>
+
+<!-- REGISTRY VIEW -->
+<div class="registry-wrap" id="registryViewSection">
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="activitySearchInput" placeholder="Search activities by name, linked record, or action...">
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <span style="font-size: 12.5px; color: var(--mute);" id="recordCountLabel">Loading activities...</span>
+        <button class="btn btn-ghost" style="padding: 8px 14px;" onclick="loadSavedActivities()">↻ Refresh</button>
+      </div>
+    </div>
+    <div style="overflow-x: auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 90px;">Activity ID</th>
+            <th>Activity Name</th>
+            <th>Record Type</th>
+            <th>Linked Record</th>
+            <th>Action</th>
+            <th>Outcome</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="activitiesTableBody">
+          <tr><td colspan="7" style="padding: 32px; text-align: center; color: var(--mute);">Loading activity log...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- FORM VIEW -->
+<div class="wrap" id="activityFormSection" style="display: none;">
+  <div class="main">
+    <form id="activityForm" onsubmit="return false;">
+      <input type="hidden" id="record_type" name="record_type" value="Account">
+      <input type="hidden" id="record_action" name="record_action" value="Email">
+      <input type="hidden" id="activity_outcome" name="activity_outcome" value="No Response">
+
+      <div class="panel">
+        <h2>What Is This About</h2>
+        <div class="field">
+          <label>Record Type<span class="req">*</span></label>
+          <div class="chip-row" id="recordTypeChips">
+            <div class="chip active" data-val="Account">Account</div>
+            <div class="chip" data-val="Subsidiary">Subsidiary</div>
+            <div class="chip" data-val="Contact">Contact</div>
+            <div class="chip" data-val="Lead">Lead</div>
+            <div class="chip" data-val="Opportunity">Opportunity</div>
+            <div class="chip" data-val="Project">Project</div>
+          </div>
+          <div class="helper">Exactly one linked record is required per activity — choosing the type filters the search below.</div>
+        </div>
+
+        <div class="row cols-2">
+          <div class="field">
+            <label>Linked Record<span class="req">*</span></label>
+            <select id="linked_record_id" name="linked_record_id" required></select>
+          </div>
+          <div class="field">
+            <label>Activity Date</label>
+            <input type="text" id="activity_date" name="activity_date" placeholder="yyyy-mm-dd hh:mm">
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Activity Details</h2>
+        <div class="field">
+          <label>Activity Name<span class="req">*</span></label>
+          <input type="text" id="activity_name" name="activity_name" placeholder="e.g. Budget confirmation call" required>
+        </div>
+
+        <div class="field">
+          <label>Record Action</label>
+          <div class="chip-row" id="recordActionChips">
+            <div class="chip active" data-val="Email">Email</div>
+            <div class="chip" data-val="LinkedIn">LinkedIn</div>
+            <div class="chip" data-val="Phone Call">Phone Call</div>
+            <div class="chip" data-val="Meeting">Meeting</div>
+            <div class="chip" data-val="Demo">Demo</div>
+            <div class="chip" data-val="Note">Note</div>
+            <div class="chip" data-val="Proposal Sent">Proposal Sent</div>
+            <div class="chip" data-val="PO Received">PO Received</div>
+          </div>
+          <div class="helper">This page is for manual logging only. System events (e.g. "Lead Qualified," "Proposal to Won") are written automatically elsewhere and never entered here.</div>
+        </div>
+
+        <div class="field">
+          <label>Activity Outcome</label>
+          <div class="chip-row" id="activityOutcomeChips">
+            <div class="chip active" data-val="No Response">No Response</div>
+            <div class="chip" data-val="Connected">Connected</div>
+            <div class="chip" data-val="Interested">Interested</div>
+            <div class="chip" data-val="Follow-up Required">Follow-up Required</div>
+            <div class="chip" data-val="Meeting Scheduled">Meeting Scheduled</div>
+            <div class="chip" data-val="Proposal Requested">Proposal Requested</div>
+            <div class="chip" data-val="Not Interested">Not Interested</div>
+            <div class="chip" data-val="Qualified">Qualified</div>
+          </div>
+          <div class="helper">The result of the interaction — separate from Record Action above, which is the channel it happened on.</div>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Follow-up</h2>
+        <div class="row cols-2">
+          <div class="field"><label>Next Step</label><input type="text" id="next_step" name="next_step" placeholder="e.g. Send revised quote"></div>
+          <div class="field"><label>Next Action Date</label><input type="text" id="next_action_date" name="next_action_date" placeholder="yyyy-mm-dd"></div>
+        </div>
+        <div class="field"><label>Notes</label><textarea id="notes" name="notes" placeholder="What was discussed"></textarea></div>
+      </div>
+    </form>
+  </div>
+
+  <div class="sidebar">
+    <div class="side-card voice">
+      <h3>🎙 Voice Entry</h3>
+      <p>Prefer to speak instead of type? Describe what happened and review before saving.</p>
+      <button type="button" class="mic-btn" aria-label="Start recording" title="Click to log activity by voice">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="#fff" stroke-width="2"/><path d="M6 11a6 6 0 0 0 12 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="19" x2="12" y2="22" stroke="#fff" stroke-width="2"/></svg>
+      </button>
+      <div class="voice-example">"Called Rajesh at Acme, he confirmed budget approval, follow up next Tuesday."</div>
+      <p>Whisper transcribes it, LFM2.5 identifies which record this is about and extracts the fields — you'll review everything before saving.</p>
+    </div>
+    <div class="side-card">
+      <h3>About this record</h3>
+      <div class="info-row"><span>Activity ID</span><span id="display_activity_id">Auto-generated</span></div>
+      <div class="info-row"><span>Created By</span><span>Ashwin Kumar</span></div>
+      <div class="info-row"><span>Creation Date</span><span>Today</span></div>
+      <div class="info-row"><span>Attribute 1–10</span><span>Reserved</span></div>
+      <p>Reserved Attribute fields are not shown on this form — they have no defined use yet.</p>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/voice_widget.js"></script>
+<script>
+  let activitiesDataCache = [];
+  let LOOKUPS = { accounts: [], subsidiaries: [], contacts: [], leads: [], opportunities: [], projects: [] };
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const recordTypeParam = urlParams.get('record_type');
+  const linkedIdParam = urlParams.get('linked_record_id');
+
+  function entityRecordsFor(entityType) {
+    switch (entityType) {
+      case 'Account': return LOOKUPS.accounts.map(a => ({ id: a.id, label: `${a.account_name} (ACC-${String(a.id).padStart(3,'0')})` }));
+      case 'Subsidiary': return LOOKUPS.subsidiaries.map(s => ({ id: s.id, label: `${s.subsidiary_name} (SUB-${String(s.id).padStart(3,'0')})` }));
+      case 'Contact': return LOOKUPS.contacts.map(c => ({ id: c.id, label: `${c.contact_name} (CON-${String(c.id).padStart(3,'0')})` }));
+      case 'Lead': return LOOKUPS.leads.map(l => ({ id: l.id, label: `${l.lead_name} (LEAD-${String(l.id).padStart(3,'0')})` }));
+      case 'Opportunity': return LOOKUPS.opportunities.map(o => ({ id: o.id, label: `${o.opportunity_name} (OPP-${String(o.id).padStart(3,'0')})` }));
+      case 'Project': return LOOKUPS.projects.map(p => ({ id: p.id, label: `${p.project_name} (PRJ-${String(p.id).padStart(3,'0')})` }));
+      default: return [];
+    }
+  }
+
+  function updateLinkedRecords(entityType, preselectId) {
+    const sel = document.getElementById('linked_record_id');
+    sel.innerHTML = '';
+    const items = entityRecordsFor(entityType);
+    if (!items.length) {
+      sel.innerHTML = '<option value="">No records available</option>';
+      return;
+    }
+    items.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.label;
+      sel.appendChild(opt);
+    });
+    if (preselectId) sel.value = preselectId;
+  }
+
+  function bindChipRow(containerId, hiddenInputId, onSelectCallback) {
+    const container = document.getElementById(containerId);
+    const hiddenInput = document.getElementById(hiddenInputId);
+    container.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        container.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const val = chip.getAttribute('data-val');
+        hiddenInput.value = val;
+        if (onSelectCallback) onSelectCallback(val);
+      });
+    });
+  }
+
+  bindChipRow('recordTypeChips', 'record_type', (selectedType) => updateLinkedRecords(selectedType));
+  bindChipRow('recordActionChips', 'record_action');
+  bindChipRow('activityOutcomeChips', 'activity_outcome');
+
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  document.getElementById('activity_date').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+  async function loadLookups() {
+    try {
+      const res = await fetch('/api/lookups');
+      LOOKUPS = await res.json();
+      updateLinkedRecords(document.getElementById('record_type').value);
+    } catch (e) { console.error('Failed to load lookups', e); }
+  }
+
+  function applyContextualPrefill() {
+    if (recordTypeParam) {
+      const chip = document.querySelector(`#recordTypeChips .chip[data-val="${recordTypeParam}"]`);
+      if (chip) {
+        document.querySelectorAll('#recordTypeChips .chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        document.getElementById('record_type').value = recordTypeParam;
+      }
+    }
+    updateLinkedRecords(document.getElementById('record_type').value, linkedIdParam);
+  }
+
+  function showCreateForm() {
+    document.getElementById('registryViewSection').style.display = 'none';
+    document.getElementById('activityFormSection').style.display = 'flex';
+    document.getElementById('btnShowCreateForm').style.display = 'none';
+    document.getElementById('btnCancelForm').style.display = 'inline-flex';
+    document.getElementById('saveActivityBtn').style.display = 'inline-flex';
+    document.getElementById('headerCrumb').innerHTML = 'Activity &nbsp;/&nbsp; <b>Log Activity</b>';
+    document.getElementById('headerTitle').textContent = 'Log Activity';
+    document.getElementById('headerSub').textContent = 'Record an interaction against any entity';
+    document.getElementById('activity_name').focus();
+  }
+
+  function showRegistryView() {
+    document.getElementById('registryViewSection').style.display = 'block';
+    document.getElementById('activityFormSection').style.display = 'none';
+    document.getElementById('btnShowCreateForm').style.display = 'inline-flex';
+    document.getElementById('btnCancelForm').style.display = 'none';
+    document.getElementById('saveActivityBtn').style.display = 'none';
+    document.getElementById('headerCrumb').innerHTML = 'Activity &nbsp;/&nbsp; <b>Registry</b>';
+    document.getElementById('headerTitle').textContent = 'Activity Timeline';
+    document.getElementById('headerSub').textContent = 'Every interaction logged across all CRM entities';
+  }
+
+  document.getElementById('btnShowCreateForm').addEventListener('click', showCreateForm);
+  document.getElementById('btnCancelForm').addEventListener('click', showRegistryView);
+
+  async function loadSavedActivities() {
+    try {
+      const res = await fetch('/api/activities/overview');
+      if (!res.ok) throw new Error('Failed to retrieve activities.');
+      activitiesDataCache = await res.json();
+      renderActivitiesTable(activitiesDataCache);
+    } catch (err) {
+      document.getElementById('activitiesTableBody').innerHTML = `<tr><td colspan="7" style="padding: 28px; text-align: center; color: #ef4444;">Failed to load activities: ${err.message}</td></tr>`;
+      document.getElementById('recordCountLabel').textContent = 'Error connecting to database';
+    }
+  }
+
+  function renderActivitiesTable(acts) {
+    const tbody = document.getElementById('activitiesTableBody');
+    document.getElementById('recordCountLabel').textContent = `${acts.length} ${acts.length === 1 ? 'activity' : 'activities'} logged`;
+    if (!acts.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="padding: 32px; text-align: center; color: var(--mute);">No activities logged yet. Click <b>"Log Activity"</b> to record one.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = acts.map(a => `
+      <tr>
+        <td><span class="badge-id">ACT-${String(a.id).padStart(3, '0')}</span></td>
+        <td style="font-weight: 700; color: var(--ink);">${a.activity_name}</td>
+        <td><span class="badge-pill">${a.record_type}</span></td>
+        <td style="color: var(--mute);">${a.linked_label}</td>
+        <td style="color: var(--mute); font-size: 13px;">${a.record_action}</td>
+        <td style="color: var(--mute); font-size: 13px;">${a.activity_outcome}</td>
+        <td style="color: var(--mute); font-size: 11.5px;">${a.activity_date}</td>
+      </tr>`).join('');
+  }
+
+  document.getElementById('activitySearchInput').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    if (!query) { renderActivitiesTable(activitiesDataCache); return; }
+    const filtered = activitiesDataCache.filter(a =>
+      a.activity_name.toLowerCase().includes(query) ||
+      (a.linked_label && a.linked_label.toLowerCase().includes(query)) ||
+      (a.record_type && a.record_type.toLowerCase().includes(query)) ||
+      (a.record_action && a.record_action.toLowerCase().includes(query)) ||
+      String(a.id).includes(query)
+    );
+    renderActivitiesTable(filtered);
+  });
+
+  document.getElementById('saveActivityBtn').addEventListener('click', async () => {
+    const actName = document.getElementById('activity_name').value.trim();
+    const recordType = document.getElementById('record_type').value;
+    const linkedId = document.getElementById('linked_record_id').value;
+
+    if (!actName) { alert("Please enter the Activity Name."); document.getElementById('activity_name').focus(); return; }
+    if (!linkedId) { alert("Please select the Linked Record."); document.getElementById('linked_record_id').focus(); return; }
+
+    const payload = {
+      activity_name: actName,
+      record_type: recordType,
+      linked_record_id: parseInt(linkedId, 10),
+      record_action: document.getElementById('record_action').value,
+      activity_outcome: document.getElementById('activity_outcome').value,
+      activity_date: document.getElementById('activity_date').value.trim() || null,
+      next_step: document.getElementById('next_step').value.trim(),
+      next_action_date: document.getElementById('next_action_date').value.trim() || null,
+      notes: document.getElementById('notes').value.trim()
+    };
+
+    try {
+      const res = await fetch('/api/activity/save', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        document.getElementById('display_activity_id').textContent = `ACT-${String(data.activity_id).padStart(4, '0')}`;
+        alert(`Activity logged successfully (ID: ACT-${data.activity_id}) against ${recordType} #${linkedId}.`);
+        document.getElementById('activityForm').reset();
+        await loadSavedActivities();
+        showRegistryView();
+      } else {
+        alert("Failed to log activity: " + (data.detail || "Server error"));
+      }
+    } catch (err) { alert("Connection error: " + err.message); }
+  });
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadLookups();
+    await loadSavedActivities();
+    if (recordTypeParam || linkedIdParam) {
+      applyContextualPrefill();
+      showCreateForm();
+    }
+  });
+</script>
+</body>
+</html>

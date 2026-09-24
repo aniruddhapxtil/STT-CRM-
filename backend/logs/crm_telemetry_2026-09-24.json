@@ -1,0 +1,30 @@
+[
+  {
+    "timestamp": "2026-09-24T10:15:54.995097",
+    "draft_id": 10,
+    "intent": "create_account",
+    "transcript": "Create account for Acme Holdings, Dubai retail Industry manager Sara Khan.",
+    "missing_fields": [],
+    "telemetry": {
+      "tokens": {
+        "input_tokens": 1801,
+        "output_tokens": 109,
+        "total_tokens": 1910
+      },
+      "costs_usd": {
+        "transcribe_cost": 0.006,
+        "bedrock_cost": 0.004692,
+        "total_cost": 0.010692,
+        "details": {
+          "audio_duration_sec": 7.5,
+          "billable_seconds": 15.0
+        }
+      },
+      "latency": {
+        "transcribe_ms": 4306,
+        "bedrock_ms": 2990,
+        "backend_total_ms": 7500
+      }
+    }
+  }
+]

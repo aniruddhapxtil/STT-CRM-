@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DataPhi CRM — Contacts</title>
+<link rel="stylesheet" href="/static/css/voice_modal.css">
+<style>
+  :root { --purple: #6C5CE7; --purple-dark: #4B3FC4; --purple-light: #F3F1FD; --ink: #20242C; --mute: #666C79; --border: #E2E4EA; --bg: #F7F8FA; }
+  * { box-sizing: border-box; } html, body { margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); min-width: 1180px; }
+  .topnav { height: 60px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; justify-content: space-between; }
+  .topnav .left { display: flex; align-items: center; gap: 34px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--purple), var(--purple-dark)); display: flex; align-items: center; justify-content: center; }
+  .brand b { font-size: 15.5px; font-weight: 800; }
+  .navlinks { display: flex; gap: 4px; }
+  .navlinks a { text-decoration: none; color: var(--mute); font-size: 13.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; }
+  .navlinks a.active { color: var(--purple-dark); background: var(--purple-light); }
+  .topnav .right { display: flex; align-items: center; gap: 16px; }
+  .icon-btn { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--mute); cursor: pointer; }
+  .icon-btn:hover { background: #F1F2F5; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: #C9CCE8; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--purple-dark); }
+  .pageheader { background: #fff; border-bottom: 1px solid var(--border); padding: 18px 40px; display: flex; align-items: center; justify-content: space-between; }
+  .crumb { font-size: 12px; color: var(--mute); margin-bottom: 6px; } .crumb b { color: var(--ink); }
+  .pageheader h1 { font-size: 22px; font-weight: 800; margin: 0; }
+  .pageheader .sub { font-size: 12.5px; color: var(--mute); margin-top: 3px; }
+  .header-actions { display: flex; gap: 10px; }
+  .btn { padding: 10px 20px; font-size: 13.5px; font-weight: 700; border-radius: 8px; cursor: pointer; border: none; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-ghost { background: #fff; color: var(--mute); border: 1.3px solid var(--border); }
+  .btn-ghost:hover { background: #F7F8FA; }
+  .btn-primary { background: var(--purple); color: #fff; }
+  .btn-primary:hover { background: var(--purple-dark); }
+  .btn-outline { background: #fff; color: var(--purple-dark); border: 1.3px solid var(--purple); padding: 8px 16px; font-size: 12.5px; font-weight: 700; border-radius: 8px; cursor: pointer; font-family: inherit; }
+  .btn-outline:hover { background: var(--purple-light); }
+
+  .registry-wrap { max-width: 1400px; margin: 28px auto; padding: 0 40px 60px; }
+  .table-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 24px; }
+  .table-toolbar { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #FAFBFD; gap: 16px; flex-wrap: wrap; }
+  .search-box { position: relative; flex: 1; max-width: 480px; }
+  .search-box input { width: 100%; padding: 10px 14px 10px 38px; font-size: 13.5px; border: 1.3px solid var(--border); border-radius: 8px; outline: none; background: #fff; font-family: inherit; }
+  .search-box input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(108,92,231,0.12); }
+  .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--mute); }
+  .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+  .data-table th { background: #F8F9FB; color: var(--mute); padding: 13px 18px; font-weight: 700; border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .data-table td { padding: 13px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .data-table tbody tr { cursor: pointer; transition: background 0.15s; }
+  .data-table tbody tr:hover { background: #F8F9FD; }
+  .data-table tbody tr.selected { background: #F1EFFE; }
+  .badge-id { font-family: monospace; font-size: 12px; font-weight: 700; color: var(--purple-dark); background: var(--purple-light); padding: 3px 8px; border-radius: 6px; }
+  .badge-pill { font-size: 11.5px; font-weight: 700; background: #F1F2F5; color: var(--ink); padding: 3px 8px; border-radius: 12px; }
+  .hierarchy-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); padding: 24px; animation: fadeIn 0.2s ease-in-out; }
+  .hierarchy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 18px; }
+  .sub-table-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .sub-table-header { background: #FAFBFD; padding: 12px 18px; border-bottom: 1px solid var(--border); font-weight: 800; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .wrap { max-width: 1400px; margin: 28px auto; padding: 0 40px 60px; display: flex; align-items: flex-start; }
+  .main { flex: 1; min-width: 0; margin-right: 24px; } .sidebar { width: 340px; flex-shrink: 0; }
+  .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 26px 30px; margin-bottom: 22px; }
+  .panel h2 { font-size: 14px; font-weight: 800; margin: 0 0 4px; }
+  .panel .panel-sub { font-size: 12px; color: var(--mute); margin: 0 0 18px; }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+  .field label .req { color: #D14545; margin-left: 2px; }
+  .field .helper { font-size: 11px; color: var(--mute); margin-top: 5px; }
+  .field input[type="text"], .field select, .field textarea { width: 100%; padding: 10px 12px; font-size: 14px; color: var(--ink); border: 1.3px solid var(--border); border-radius: 8px; background: #fff; font-family: inherit; outline: none; }
+  .field textarea { resize: vertical; min-height: 70px; }
+  .field input[type="text"]:focus, .field select:focus, .field textarea:focus { border-color: var(--purple); }
+  .field select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23666C79' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>"); background-repeat: no-repeat; background-position: right 12px center; }
+  .row { display: flex; margin: 0 -9px; } .row .field { padding: 0 9px; margin-bottom: 18px; }
+  .row.cols-2 .field { width: 50%; }
+  .section-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 22px; }
+  .side-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 20px; }
+  .side-card.voice { background: linear-gradient(160deg, var(--purple-light), #fff); border-color: #DAD5F7; }
+  .side-card h3 { font-size: 13px; font-weight: 800; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+  .side-card p { font-size: 12px; color: var(--mute); line-height: 1.6; margin: 6px 0 0; }
+  .mic-btn { width: 52px; height: 52px; border-radius: 50%; border: none; background: var(--purple); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 6px rgba(108,92,231,0.14); margin: 14px auto 10px; transition: transform 0.2s, box-shadow 0.2s; }
+  .voice-example { background: #fff; border: 1px dashed #C9CCE8; border-radius: 8px; padding: 10px 12px; font-size: 11.5px; color: var(--purple-dark); font-style: italic; margin-top: 12px; }
+  .info-row { display: flex; justify-content: space-between; font-size: 12px; padding: 7px 0; border-bottom: 1px solid #F1F2F5; } .info-row:last-child { border-bottom: none; }
+  .info-row span:first-child { color: var(--mute); } .info-row span:last-child { font-weight: 700; color: #9AA0AC; }
+  .readonly-block { background: #FAFAFB; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px 4px; margin-bottom: 8px; display: flex; flex-wrap: wrap; }
+  .readonly-item { width: 25%; margin-bottom: 12px; }
+  .readonly-item .rlabel { font-size: 10.5px; font-weight: 700; color: #9AA0AC; text-transform: uppercase; letter-spacing: .03em; }
+  .readonly-item .rvalue { font-size: 13px; font-weight: 600; color: var(--ink); margin-top: 2px; }
+  .readonly-item .rvalue.link { color: var(--purple-dark); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="left">
+    <div class="brand"><div class="mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="2"/><path d="M9 8v8l6-4-6-4z" fill="#fff"/></svg></div><b>DataPhi CRM</b></div>
+    <div class="navlinks">
+      <a href="/page/voice">🎙 Voice Station</a>
+      <a href="/page/account">Accounts</a>
+      <a href="/page/subsidiary">Subsidiaries</a>
+      <a href="/page/contact" class="active">Contacts</a>
+      <a href="/page/lead">Leads</a>
+      <a href="/page/opportunity">Opportunities</a>
+      <a href="/page/project">Projects</a>
+      <a href="/page/activity">Activity</a>
+    </div>
+  </div>
+  <div class="right">
+    <div class="icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><line x1="21" y1="21" x2="16.5" y2="16.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    <div class="icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.7 21a2 2 0 0 1-3.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    <div class="avatar">AK</div>
+  </div>
+</div>
+
+<div class="pageheader">
+  <div>
+    <div class="crumb" id="headerCrumb">Contacts &nbsp;/&nbsp; <b>Registry</b></div>
+    <h1 id="headerTitle">Contacts Directory</h1>
+    <div class="sub" id="headerSub">Stakeholders across every enterprise account and subsidiary</div>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="btn btn-primary" id="btnShowCreateForm">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Create Contact
+    </button>
+    <button type="button" class="btn btn-ghost" id="btnCancelForm" style="display:none;">Cancel &amp; View Directory</button>
+    <button type="button" class="btn btn-primary" id="saveContactBtn" style="display:none;">Save Contact</button>
+  </div>
+</div>
+
+<!-- REGISTRY VIEW -->
+<div class="registry-wrap" id="registryViewSection">
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="contactSearchInput" placeholder="Search contacts by name, designation, email, or account...">
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <span style="font-size: 12.5px; color: var(--mute);" id="recordCountLabel">Loading contacts...</span>
+        <button class="btn btn-ghost" style="padding: 8px 14px;" onclick="loadSavedContacts()">↻ Refresh</button>
+      </div>
+    </div>
+    <div style="overflow-x: auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 100px;">Contact ID</th>
+            <th>Contact Name</th>
+            <th>Designation</th>
+            <th>Email</th>
+            <th>Parent Account</th>
+            <th>Subsidiary</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="contactsTableBody">
+          <tr><td colspan="7" style="padding: 32px; text-align: center; color: var(--mute);">Loading contacts database...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="hierarchy-card" id="contactHierarchyCard" style="display:none;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--ink);">
+          Stakeholder Detail for <span id="selectedContactTitle" style="color: var(--purple-dark);"></span>
+        </h3>
+        <p style="margin: 4px 0 0; font-size: 12px; color: var(--mute);">Linked enterprise, branch, and commercial engagement for this contact</p>
+      </div>
+      <span class="badge-id" id="selectedContactIdBadge"></span>
+    </div>
+
+    <div class="hierarchy-grid">
+      <div class="sub-table-wrap">
+        <div class="sub-table-header"><span>Linked Enterprise &amp; Branch</span></div>
+        <div style="padding: 16px 18px;">
+          <div class="info-row"><span>Account Name</span><span id="linkedAccName" style="color: var(--ink);">—</span></div>
+          <div class="info-row"><span>Account ID</span><span id="linkedAccId">—</span></div>
+          <div class="info-row"><span>Subsidiary</span><span id="linkedSubName">Direct Parent Contact</span></div>
+        </div>
+      </div>
+
+      <div class="sub-table-wrap">
+        <div class="sub-table-header">
+          <span>Associated Leads &amp; Deals</span>
+          <button class="btn-outline" id="createLeadForContactBtn">+ Create Lead</button>
+        </div>
+        <table class="data-table" style="font-size: 12.5px;">
+          <thead><tr><th>ID</th><th>Name</th><th>Stage</th><th>Value</th></tr></thead>
+          <tbody id="contactDealsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM VIEW -->
+<div class="wrap" id="contactFormSection" style="display: none;">
+  <div class="main">
+    <form id="contactForm" onsubmit="return false;">
+      <div class="panel">
+        <h2>Belongs To</h2>
+        <p class="panel-sub">Select the parent Account, and optionally a specific Subsidiary of it.</p>
+        <div class="row cols-2">
+          <div class="field">
+            <label>Account<span class="req">*</span></label>
+            <select id="account_id" name="account_id" required>
+              <option value="">Select account</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Subsidiary</label>
+            <select id="subsidiary_id" name="subsidiary_id">
+              <option value="">None — Direct Parent Contact</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Contact Information</h2>
+        <p class="panel-sub">Who this person is and how to reach them.</p>
+
+        <div class="field">
+          <label>Contact Name<span class="req">*</span></label>
+          <input type="text" id="contact_name" name="contact_name" placeholder="e.g. Rajesh Menon" required>
+        </div>
+
+        <div class="row cols-2">
+          <div class="field"><label>Designation</label><input type="text" id="designation" name="designation" placeholder="e.g. Procurement Manager"></div>
+          <div class="field"><label>Linkedin Url</label><input type="text" id="linkedin_url" name="linkedin_url" placeholder="linkedin.com/in/..."></div>
+        </div>
+
+        <div class="row cols-2">
+          <div class="field"><label>Email</label><input type="text" id="email" name="email" placeholder="e.g. rajesh@acme.com"></div>
+          <div class="field"><label>Mobile</label><input type="text" id="mobile" name="mobile" placeholder="e.g. 055 123 4567"></div>
+        </div>
+
+        <div class="field">
+          <label>Secondary Mobile</label>
+          <input type="text" id="secondary_mobile" name="secondary_mobile" placeholder="Optional — alternate or assistant number" style="max-width: calc(50% - 9px);">
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Address</h2>
+        <div class="row cols-2">
+          <div class="field"><label>Primary Address</label><input type="text" id="primary_address" name="primary_address" placeholder="e.g. Office 1402, Business Bay Tower, Dubai"></div>
+          <div class="field"><label>Secondary Address</label><input type="text" id="secondary_address" name="secondary_address" placeholder="Optional"></div>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Notes</h2>
+        <div class="field"><label>Notes</label><textarea id="notes" name="notes" placeholder="Any relevant context about this contact"></textarea></div>
+      </div>
+    </form>
+  </div>
+
+  <div class="sidebar">
+    <div class="side-card voice">
+      <h3>🎙 Voice Entry</h3>
+      <p>Prefer to speak instead of type? Record the contact details and review before saving.</p>
+      <button type="button" class="mic-btn" aria-label="Start recording" title="Click to record contact details">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="#fff" stroke-width="2"/><path d="M6 11a6 6 0 0 0 12 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="19" x2="12" y2="22" stroke="#fff" stroke-width="2"/></svg>
+      </button>
+      <div class="voice-example">"Add contact Rajesh Menon, Procurement Manager at Acme Holdings, mobile 055 123 4567."</div>
+      <p>Transcribed by Whisper, extracted by LFM2.5 — every field is shown here for you to confirm before it saves.</p>
+    </div>
+    <div class="side-card">
+      <h3>About this record</h3>
+      <div class="info-row"><span>Contact ID</span><span id="display_contact_id">Auto-generated</span></div>
+      <div class="info-row"><span>Created By</span><span>Ashwin Kumar</span></div>
+      <div class="info-row"><span>Creation Date</span><span>Today</span></div>
+      <div class="info-row"><span>Attribute 1–10</span><span>Reserved</span></div>
+      <p>Reserved Attribute fields are not shown on this form — they have no defined use yet.</p>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/voice_widget.js"></script>
+<script>
+  let contactsDataCache = [];
+  let selectedContactId = null;
+  let LOOKUPS = { accounts: [], subsidiaries: [] };
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const accountIdParam = urlParams.get('account_id');
+  const subsidiaryIdParam = urlParams.get('subsidiary_id');
+
+  async function loadLookups() {
+    try {
+      const res = await fetch('/api/lookups');
+      LOOKUPS = await res.json();
+      const accSel = document.getElementById('account_id');
+      accSel.innerHTML = '<option value="">Select account</option>' + LOOKUPS.accounts.map(a =>
+        `<option value="${a.id}">${a.account_name}</option>`
+      ).join('');
+      refreshSubsidiaryOptions();
+      if (accountIdParam) { accSel.value = accountIdParam; refreshSubsidiaryOptions(); }
+      if (subsidiaryIdParam) document.getElementById('subsidiary_id').value = subsidiaryIdParam;
+    } catch (e) { console.error('Failed to load lookups', e); }
+  }
+
+  function refreshSubsidiaryOptions() {
+    const accId = document.getElementById('account_id').value;
+    const subSel = document.getElementById('subsidiary_id');
+    const filtered = LOOKUPS.subsidiaries.filter(s => !accId || String(s.account_id) === String(accId));
+    subSel.innerHTML = '<option value="">None — Direct Parent Contact</option>' + filtered.map(s =>
+      `<option value="${s.id}">${s.subsidiary_name}</option>`
+    ).join('');
+  }
+  document.getElementById('account_id').addEventListener('change', refreshSubsidiaryOptions);
+
+  function showCreateForm() {
+    document.getElementById('registryViewSection').style.display = 'none';
+    document.getElementById('contactFormSection').style.display = 'flex';
+    document.getElementById('btnShowCreateForm').style.display = 'none';
+    document.getElementById('btnCancelForm').style.display = 'inline-flex';
+    document.getElementById('saveContactBtn').style.display = 'inline-flex';
+    document.getElementById('headerCrumb').innerHTML = 'Contacts &nbsp;/&nbsp; <b>New Contact</b>';
+    document.getElementById('headerTitle').textContent = 'New Contact';
+    document.getElementById('headerSub').textContent = 'Customer & Account Setup — Step 3 of 4';
+    document.getElementById('contact_name').focus();
+  }
+
+  function showRegistryView() {
+    document.getElementById('registryViewSection').style.display = 'block';
+    document.getElementById('contactFormSection').style.display = 'none';
+    document.getElementById('btnShowCreateForm').style.display = 'inline-flex';
+    document.getElementById('btnCancelForm').style.display = 'none';
+    document.getElementById('saveContactBtn').style.display = 'none';
+    document.getElementById('headerCrumb').innerHTML = 'Contacts &nbsp;/&nbsp; <b>Registry</b>';
+    document.getElementById('headerTitle').textContent = 'Contacts Directory';
+    document.getElementById('headerSub').textContent = 'Stakeholders across every enterprise account and subsidiary';
+  }
+
+  document.getElementById('btnShowCreateForm').addEventListener('click', showCreateForm);
+  document.getElementById('btnCancelForm').addEventListener('click', showRegistryView);
+
+  async function loadSavedContacts() {
+    try {
+      const res = await fetch('/api/contacts/overview');
+      if (!res.ok) throw new Error('Failed to retrieve contacts.');
+      contactsDataCache = await res.json();
+      renderContactsTable(contactsDataCache);
+    } catch (err) {
+      document.getElementById('contactsTableBody').innerHTML = `<tr><td colspan="7" style="padding: 28px; text-align: center; color: #ef4444;">Failed to load contacts: ${err.message}</td></tr>`;
+      document.getElementById('recordCountLabel').textContent = 'Error connecting to database';
+    }
+  }
+
+  function renderContactsTable(contacts) {
+    const tbody = document.getElementById('contactsTableBody');
+    document.getElementById('recordCountLabel').textContent = `${contacts.length} ${contacts.length === 1 ? 'contact' : 'contacts'} registered`;
+    if (!contacts.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="padding: 32px; text-align: center; color: var(--mute);">No contacts registered yet. Click <b>"Create Contact"</b> to add your first stakeholder.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = contacts.map(c => {
+      const isSelected = c.id === selectedContactId;
+      return `
+        <tr class="${isSelected ? 'selected' : ''}" onclick="selectContactRow(${c.id})">
+          <td><span class="badge-id">CON-${String(c.id).padStart(3, '0')}</span></td>
+          <td style="font-weight: 700; color: var(--ink);">${c.contact_name}</td>
+          <td style="color: var(--mute);">${c.designation}</td>
+          <td style="color: var(--mute); font-family: monospace; font-size: 11.5px;">${c.email}</td>
+          <td style="color: var(--mute);">${c.account_name}</td>
+          <td>${c.subsidiary_name ? `<span class="badge-pill">${c.subsidiary_name}</span>` : '<span style="color:var(--mute); font-size:12px;">Direct</span>'}</td>
+          <td style="text-align: right;"><button class="btn btn-ghost" style="padding: 5px 10px; font-size: 12px;" onclick="event.stopPropagation(); selectContactRow(${c.id})">Explore ➔</button></td>
+        </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('contactSearchInput').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    if (!query) { renderContactsTable(contactsDataCache); return; }
+    const filtered = contactsDataCache.filter(c =>
+      c.contact_name.toLowerCase().includes(query) ||
+      (c.designation && c.designation.toLowerCase().includes(query)) ||
+      (c.email && c.email.toLowerCase().includes(query)) ||
+      (c.account_name && c.account_name.toLowerCase().includes(query)) ||
+      String(c.id).includes(query)
+    );
+    renderContactsTable(filtered);
+  });
+
+  function selectContactRow(conId) {
+    selectedContactId = conId;
+    renderContactsTable(contactsDataCache);
+    const con = contactsDataCache.find(c => c.id === conId);
+    if (!con) return;
+
+    const card = document.getElementById('contactHierarchyCard');
+    card.style.display = 'block';
+    document.getElementById('selectedContactTitle').textContent = con.contact_name;
+    document.getElementById('selectedContactIdBadge').textContent = `CON-${String(con.id).padStart(3, '0')}`;
+    document.getElementById('linkedAccName').textContent = con.account_name;
+    document.getElementById('linkedAccId').textContent = `ACC-${String(con.account_id).padStart(3, '0')}`;
+    document.getElementById('linkedSubName').textContent = con.subsidiary_name || 'Direct Parent Contact';
+
+    document.getElementById('createLeadForContactBtn').onclick = () => {
+      window.location.href = `/page/lead?contact_id=${con.id}&account_id=${con.account_id}`;
+    };
+
+    const dealsBody = document.getElementById('contactDealsTableBody');
+    const deals = [
+      ...con.leads.map(l => ({ id: l.id, tag: 'LEAD', name: l.lead_name, stage: l.stage, value: l.deal_size, currency: l.currency })),
+      ...con.opportunities.map(o => ({ id: o.id, tag: 'OPP', name: o.opportunity_name, stage: o.stage, value: o.deal_size, currency: o.currency })),
+    ];
+    if (!deals.length) {
+      dealsBody.innerHTML = `<tr><td colspan="4" style="padding: 16px; text-align: center; color: var(--mute);">No leads or opportunities linked to this contact yet.</td></tr>`;
+    } else {
+      dealsBody.innerHTML = deals.map(d => `
+        <tr>
+          <td><span class="badge-id">${d.tag}-${String(d.id).padStart(3, '0')}</span></td>
+          <td style="font-weight: 700; color: var(--ink);">${d.name}</td>
+          <td><span class="badge-pill">${d.stage}</span></td>
+          <td style="color: var(--mute);">${d.value ? d.value.toLocaleString() + ' ' + d.currency : '—'}</td>
+        </tr>`).join('');
+    }
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  document.getElementById('saveContactBtn').addEventListener('click', async () => {
+    const contact_name = document.getElementById('contact_name').value.trim();
+    const account_id = document.getElementById('account_id').value;
+
+    if (!account_id) { alert("Please select the parent Account."); document.getElementById('account_id').focus(); return; }
+    if (!contact_name) { alert("Please enter the Contact Name."); document.getElementById('contact_name').focus(); return; }
+
+    const subIdVal = document.getElementById('subsidiary_id').value;
+    const payload = {
+      account_id: parseInt(account_id, 10),
+      subsidiary_id: subIdVal ? parseInt(subIdVal, 10) : null,
+      contact_name: contact_name,
+      designation: document.getElementById('designation').value.trim(),
+      linkedin_url: document.getElementById('linkedin_url').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      mobile: document.getElementById('mobile').value.trim(),
+      secondary_mobile: document.getElementById('secondary_mobile').value.trim(),
+      primary_address: document.getElementById('primary_address').value.trim(),
+      secondary_address: document.getElementById('secondary_address').value.trim(),
+      notes: document.getElementById('notes').value.trim()
+    };
+
+    try {
+      const res = await fetch('/api/contact/save', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        document.getElementById('display_contact_id').textContent = `CON-${data.contact_id}`;
+        alert(`Contact saved successfully with ID: CON-${data.contact_id}`);
+        document.getElementById('contactForm').reset();
+        await loadSavedContacts();
+        selectContactRow(data.contact_id);
+        showRegistryView();
+      } else {
+        alert("Failed to save contact: " + (data.detail || "Server error"));
+      }
+    } catch (err) { alert("Connection error: " + err.message); }
+  });
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadLookups();
+    await loadSavedContacts();
+    if (accountIdParam) showCreateForm();
+  });
+</script>
+</body>
+</html>

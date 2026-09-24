@@ -1,0 +1,86 @@
+[
+  {
+    "timestamp": "2026-09-23T11:02:01.708524",
+    "draft_id": 7,
+    "intent": "create_account",
+    "transcript": "Create an account for Chesswi India, the account manager is Bukesh Domaraju, and the region of operation is in. Abu Dhabi.",
+    "missing_fields": [],
+    "telemetry": {
+      "tokens": {
+        "input_tokens": 1816,
+        "output_tokens": 114,
+        "total_tokens": 1930
+      },
+      "costs_usd": {
+        "transcribe_cost": 0.006,
+        "bedrock_cost": 0.004772,
+        "total_cost": 0.010772,
+        "details": {
+          "audio_duration_sec": 12.24,
+          "billable_seconds": 15.0
+        }
+      },
+      "latency": {
+        "transcribe_ms": 5258,
+        "bedrock_ms": 3611,
+        "backend_total_ms": 9051
+      }
+    }
+  },
+  {
+    "timestamp": "2026-09-23T11:26:39.988619",
+    "draft_id": 8,
+    "intent": "create_opportunity",
+    "transcript": "an opportunity for Dubai Integrated Economic Zone for 450,000 AED on Azure Data bricks and Power BI, with Tariq Mansoor, who is the vice president of Smart City, the scope of the project is an IoT telemetry lake house, an analytical platform under time and materials project type, the account manager for this account is Ramanj Falasi, operating in Dubai region, under a semi-government in the. industry, the next step is to present the architecture desk next Thursday.",
+    "missing_fields": [],
+    "telemetry": {
+      "tokens": {
+        "input_tokens": 1927,
+        "output_tokens": 986,
+        "total_tokens": 2913
+      },
+      "costs_usd": {
+        "transcribe_cost": 0.013992,
+        "bedrock_cost": 0.013714,
+        "total_cost": 0.027706,
+        "details": {
+          "audio_duration_sec": 34.98,
+          "billable_seconds": 34.98
+        }
+      },
+      "latency": {
+        "transcribe_ms": 10330,
+        "bedrock_ms": 10253,
+        "backend_total_ms": 20749
+      }
+    }
+  },
+  {
+    "timestamp": "2026-09-23T12:23:59.052647",
+    "draft_id": 9,
+    "intent": "create_contact",
+    "transcript": "C a contact for Altyre Motors, the contact name is Vishwanathan, his designation as vice president, and his mobile number is 762-0452345.",
+    "missing_fields": [],
+    "telemetry": {
+      "tokens": {
+        "input_tokens": 1819,
+        "output_tokens": 144,
+        "total_tokens": 1963
+      },
+      "costs_usd": {
+        "transcribe_cost": 0.006,
+        "bedrock_cost": 0.005078,
+        "total_cost": 0.011078,
+        "details": {
+          "audio_duration_sec": 14.46,
+          "billable_seconds": 15.0
+        }
+      },
+      "latency": {
+        "transcribe_ms": 5881,
+        "bedrock_ms": 3938,
+        "backend_total_ms": 9989
+      }
+    }
+  }
+]

@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataPhi CRM — Universal Voice Station</title>
+<style>
+  :root {
+    --purple: #6C5CE7; --purple-dark: #4B3FC4; --purple-light: #F3F1FD;
+    --ink: #1E2430; --mute: #64748B; --border: #E2E8F0; --bg: #F8FAFC;
+    --warning: #F59E0B; --warning-light: #FEF3C7; --danger: #EF4444;
+    --success: #10B981; --success-light: #D1FAE5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+
+  /* Top Navigation */
+  .topnav { height: 62px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 32px; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 16px; color: var(--ink); }
+  .brand .mark { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--purple), var(--purple-dark)); display: flex; align-items: center; justify-content: center; }
+  .navlinks { display: flex; gap: 6px; }
+  .navlinks a { text-decoration: none; color: var(--mute); font-size: 13.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; }
+  .navlinks a.active { color: var(--purple-dark); background: var(--purple-light); }
+
+  /* Station Grid */
+  .container { max-width: 1440px; margin: 28px auto; padding: 0 32px; display: grid; grid-template-columns: 420px 1fr; gap: 28px; }
+
+  /* Left Panel: Audio Recorder & Ingestion Controls */
+  .console-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 26px; box-shadow: 0 4px 18px rgba(0,0,0,0.03); }
+  .station-title { font-size: 18px; font-weight: 800; margin: 0 0 6px; }
+  .station-sub { font-size: 13px; color: var(--mute); margin: 0 0 20px; line-height: 1.5; }
+
+  .mic-stage { background: linear-gradient(180deg, var(--purple-light), #fff); border: 1.5px dashed #D2CCFB; border-radius: 14px; padding: 32px 20px; text-align: center; margin-bottom: 20px; position: relative; }
+  .mic-btn { width: 68px; height: 68px; border-radius: 50%; border: none; background: var(--purple); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; box-shadow: 0 0 0 8px rgba(108,92,231,0.15); transition: transform 0.2s, box-shadow 0.2s; }
+  .mic-btn.recording { background: var(--danger); box-shadow: 0 0 0 12px rgba(239,68,68,0.22); animation: pulse 1.2s infinite; }
+  .mic-status { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .mic-timer { font-family: monospace; font-size: 12px; color: var(--mute); margin-top: 4px; }
+
+  @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.06); } 100% { transform: scale(1); } }
+
+  /* Latency Benchmarks */
+  .benchmarks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .bench-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; }
+  .bench-box span { display: block; font-size: 10.5px; color: var(--mute); font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
+  .bench-box strong { font-size: 14px; color: var(--ink); font-weight: 800; font-family: monospace; }
+
+  /* Telemetry Meta Strip */
+  .telemetry-strip { background: var(--purple-light); border: 1px solid #D2CCFB; border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; color: var(--purple-dark); margin-bottom: 20px; }
+
+  /* Clarification / Follow-up Box */
+  .clarification-card { background: var(--warning-light); border: 1.5px solid #FCD34D; border-radius: 12px; padding: 18px; margin-bottom: 22px; display: none; }
+  .clarification-card h4 { margin: 0 0 6px; color: #92400E; font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+  .clarification-prompt { font-size: 13px; color: #78350F; line-height: 1.5; margin-bottom: 12px; }
+  .resume-controls { display: flex; gap: 8px; }
+  .resume-input { flex: 1; padding: 9px 12px; border: 1.3px solid #FCD34D; border-radius: 8px; font-size: 13px; outline: none; background: #fff; }
+  .btn-resume { background: #92400E; color: #fff; border: none; border-radius: 8px; padding: 0 14px; font-weight: 700; font-size: 12.5px; cursor: pointer; }
+
+  /* Right Panel: Extracted Fields Review & Hierarchy */
+  .review-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 26px; box-shadow: 0 4px 18px rgba(0,0,0,0.03); }
+  .review-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 22px; }
+  .badge-tag { font-size: 11.5px; font-weight: 800; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; }
+  .badge-ready { background: var(--success-light); color: var(--success); }
+  .badge-incomplete { background: var(--warning-light); color: #B45309; }
+
+  .transcript-preview { background: #FAFBFD; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 13px; color: var(--mute); font-style: italic; margin-bottom: 22px; line-height: 1.5; }
+
+  /* Entity Section Grids */
+  .entity-section { margin-bottom: 20px; border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .entity-section h3 { margin: 0 0 12px; font-size: 14px; font-weight: 800; color: var(--purple-dark); display: flex; align-items: center; justify-content: space-between; }
+  .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .form-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .field-group label { display: block; font-size: 11.5px; font-weight: 700; color: var(--mute); margin-bottom: 4px; text-transform: uppercase; }
+  .field-group input { width: 100%; padding: 8px 10px; font-size: 13px; border: 1.3px solid var(--border); border-radius: 6px; font-family: inherit; color: var(--ink); }
+  .field-group input:focus { border-color: var(--purple); outline: none; }
+  .field-group input.missing-highlight { border-color: var(--danger); background: #FFF5F5; }
+
+  .btn-commit { width: 100%; background: var(--purple); color: #fff; padding: 14px; border: none; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; transition: background 0.15s; margin-top: 10px; }
+  .btn-commit:hover { background: var(--purple-dark); }
+  .btn-commit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Recent Drafts Table */
+  .drafts-card { max-width: 1440px; margin: 0 auto 60px; padding: 0 32px; }
+  .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .data-table th { background: #F8FAFC; color: var(--mute); padding: 12px 16px; font-weight: 700; border-bottom: 1px solid var(--border); font-size: 11.5px; text-transform: uppercase; }
+  .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .data-table tr:hover { background: #FAFBFD; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="brand">
+    <div class="mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="2"/><path d="M9 8v8l6-4-6-4z" fill="#fff"/></svg>
+    </div>
+    DataPhi CRM
+  </div>
+  <div class="navlinks">
+    <a href="/page/voice" class="active">🎙 Voice Station</a>
+    <a href="/page/account">Accounts</a>
+    <a href="/page/subsidiary">Subsidiaries</a>
+    <a href="/page/contact">Contacts</a>
+    <a href="/page/lead">Leads</a>
+    <a href="/page/opportunity">Opportunities</a>
+    <a href="/page/project">Projects</a>
+    <a href="/page/activity">Activity</a>
+  </div>
+</div>
+
+<div class="container">
+  
+  <!-- Left Column: Audio Controls & Benchmark Performance -->
+  <div class="console-card">
+    <h2 class="station-title">Universal Voice Capture</h2>
+    <p class="station-sub">Speak freely about accounts, contacts, deals, or projects. The backend validates mandatory fields and stages drafts automatically.</p>
+
+    <div class="mic-stage">
+      <button class="mic-btn" id="micBtn" title="Start Recording">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0"/><line x1="12" y1="19" x2="12" y2="22"/>
+        </svg>
+      </button>
+      <div class="mic-status" id="micStatusText">Click to Speak</div>
+      <div class="mic-timer" id="micTimer">00:00</div>
+    </div>
+
+    <!-- Clarification Follow-up Box for Incomplete Drafts -->
+    <div class="clarification-card" id="clarificationBox">
+      <h4>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Action Required: Incomplete Information
+      </h4>
+      <div class="clarification-prompt" id="clarificationPromptText"></div>
+      <div class="resume-controls">
+        <input type="text" class="resume-input" id="resumeTextInput" placeholder="Type answer or click mic to supply answer...">
+        <button class="btn-resume" id="submitResumeBtn">Patch Draft</button>
+      </div>
+    </div>
+
+    <!-- Latency Benchmarks (Updated for AWS Transcribe & Claude Sonnet 5) -->
+    <div class="benchmarks">
+      <div class="bench-box">
+        <span id="labelASR">Transcribe</span>
+        <strong id="benchWhisper">0 ms</strong>
+      </div>
+      <div class="bench-box">
+        <span id="labelLLM">Sonnet 5</span>
+        <strong id="benchLLM">0 ms</strong>
+      </div>
+      <div class="bench-box">
+        <span>Total Time</span>
+        <strong id="benchTotal">0 ms</strong>
+      </div>
+    </div>
+
+    <!-- Cloud Telemetry Meta Strip -->
+    <div class="telemetry-strip" id="telemetryStrip">
+      <span>Duration: <strong id="metaAudioLen">00:00</strong></span>
+      <span>Tokens: <strong id="metaTokens">0</strong></span>
+      <span>Cost: <strong id="metaCost">$0.0000</strong></span>
+    </div>
+
+    <div style="font-size: 12px; color: var(--mute); line-height: 1.6;">
+      <strong>Sample Voice Memos:</strong><br>
+      • <em>"Create an opportunity for DIEZ for 450,000 AED on Azure Databricks with Tariq Mansoor, VP of Smart Cities."</em><br>
+      • <em>"New lead for Majid Al Futtaim, retail analytics, 200,000 AED budget."</em>
+    </div>
+  </div>
+
+  <!-- Right Column: Extracted Entities & Pre-Commit Inspector -->
+  <div class="review-card">
+    <div class="review-header">
+      <div>
+        <h3 style="margin: 0; font-size: 16px; font-weight: 800;">Staged Draft Inspector</h3>
+        <span style="font-size: 12px; color: var(--mute);" id="activeDraftBadge">No active recording</span>
+      </div>
+      <span class="badge-tag badge-incomplete" id="draftStatusBadge">READY</span>
+    </div>
+
+    <div class="transcript-preview" id="transcriptText">
+      Spoken transcript will appear here after recording...
+    </div>
+
+    <!-- Account Entity Fields -->
+    <div class="entity-section">
+      <h3>1. Enterprise Account</h3>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>Account Name*</label>
+          <input type="text" id="acc_name">
+        </div>
+        <div class="field-group">
+          <label>Account Manager</label>
+          <input type="text" id="acc_manager">
+        </div>
+        <div class="field-group">
+          <label>Region</label>
+          <input type="text" id="acc_region">
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Entity Fields -->
+    <div class="entity-section">
+      <h3>2. Stakeholder Contact</h3>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>Contact Name*</label>
+          <input type="text" id="con_name">
+        </div>
+        <div class="field-group">
+          <label>Designation</label>
+          <input type="text" id="con_desig">
+        </div>
+        <div class="field-group">
+          <label>Email</label>
+          <input type="text" id="con_email">
+        </div>
+      </div>
+    </div>
+
+    <!-- Commercial Deal / Lead / Opportunity Fields -->
+    <div class="entity-section">
+      <h3>3. Opportunity &amp; Auto-Backfilled Lead Scope</h3>
+      <div class="form-grid cols-2" style="margin-bottom: 12px;">
+        <div class="field-group">
+          <label>Opportunity / Lead Title</label>
+          <input type="text" id="opp_title">
+        </div>
+        <div class="field-group">
+          <label>Estimated Value (AED)</label>
+          <input type="number" id="opp_value">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>Technology</label>
+          <input type="text" id="opp_tech">
+        </div>
+        <div class="field-group">
+          <label>Scope / Service</label>
+          <input type="text" id="opp_service">
+        </div>
+        <div class="field-group">
+          <label>Next Steps</label>
+          <input type="text" id="opp_next">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-commit" id="commitBtn" disabled>Confirm &amp; Commit to Database</button>
+  </div>
+
+</div>
+
+<!-- Recent Voice Drafts Drawer -->
+<div class="drafts-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+    <h3 style="margin: 0; font-size: 16px; font-weight: 800;">Recent Voice Drafts &amp; Sessions</h3>
+    <button onclick="loadRecentDrafts()" style="background: none; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700;">↻ Refresh</button>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width: 80px;">Draft ID</th>
+        <th style="width: 120px;">Target</th>
+        <th>Transcript</th>
+        <th style="width: 120px;">Status</th>
+        <th style="width: 140px;">Created</th>
+        <th style="text-align: right; width: 100px;">Action</th>
+      </tr>
+    </thead>
+    <tbody id="draftsTableBody">
+      <tr><td colspan="6" style="text-align: center; color: var(--mute);">Loading drafts...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+let mediaRecorder = null;
+let audioChunks = [];
+let recordTimerInterval = null;
+let currentDraft = null;
+
+const micBtn = document.getElementById("micBtn");
+const micStatusText = document.getElementById("micStatusText");
+const micTimer = document.getElementById("micTimer");
+const commitBtn = document.getElementById("commitBtn");
+const clarificationBox = document.getElementById("clarificationBox");
+const clarificationPromptText = document.getElementById("clarificationPromptText");
+const resumeTextInput = document.getElementById("resumeTextInput");
+const submitResumeBtn = document.getElementById("submitResumeBtn");
+
+// Mic Toggle Handler
+micBtn.addEventListener("click", async () => {
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    mediaRecorder.stop();
+    micBtn.classList.remove("recording");
+    micStatusText.textContent = "Processing audio via AWS...";
+    clearInterval(recordTimerInterval);
+  } else {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop());
+        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+        await uploadAudio(audioBlob);
+      };
+
+      mediaRecorder.start();
+      micBtn.classList.add("recording");
+      micStatusText.textContent = "Listening... Click to Stop";
+      
+      let seconds = 0;
+      recordTimerInterval = setInterval(() => {
+        seconds++;
+        const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
+        const secs = String(seconds % 60).padStart(2, "0");
+        micTimer.textContent = `${mins}:${secs}`;
+      }, 1000);
+    } catch (err) {
+      alert("Microphone permission denied or unsupported: " + err.message);
+    }
+  }
+});
+
+// Upload and Process Audio
+async function uploadAudio(blob) {
+  const formData = new FormData();
+  formData.append("audio", blob, "voice_command.webm");
+
+  try {
+    const res = await fetch("/api/voice/process", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Audio processing failed.");
+
+    populateDraft(data);
+    loadRecentDrafts();
+  } catch (err) {
+    alert("Extraction error: " + err.message);
+    micStatusText.textContent = "Click to Speak";
+  }
+}
+
+// SAFE Extraction Populator
+function populateDraft(data) {
+  currentDraft = data;
+
+  // Latency Benchmarks (Supports AWS Bedrock / Transcribe as well as local Whisper / LLM)
+  const tel = data.telemetry || {};
+  const lat = tel.latency || data.latency || {};
+  const costs = tel.costs_usd || {};
+  const tokens = tel.tokens || {};
+
+  const asrMs = lat.transcribe_ms ?? lat.whisper_ms ?? 0;
+  const llmMs = lat.bedrock_ms ?? lat.llm_ms ?? 0;
+  const totalMs = lat.backend_total_ms ?? data.processing_ms ?? (asrMs + llmMs);
+
+  document.getElementById("benchWhisper").textContent = `${asrMs} ms`;
+  document.getElementById("benchLLM").textContent = `${llmMs} ms`;
+  document.getElementById("benchTotal").textContent = `${totalMs} ms`;
+
+  // Dynamically update card labels based on engine used
+  if (lat.transcribe_ms !== undefined) {
+    document.getElementById("labelASR").textContent = "Transcribe";
+    document.getElementById("labelLLM").textContent = "Sonnet 5";
+  }
+
+  // Update Telemetry Meta Strip
+  const durSec = costs.details?.audio_duration_sec ?? data.audio_length_seconds ?? null;
+  if (durSec !== null) {
+    const mins = String(Math.floor(durSec / 60)).padStart(2, "0");
+    const secs = String(Math.round(durSec % 60)).padStart(2, "0");
+    document.getElementById("metaAudioLen").textContent = `${mins}:${secs}`;
+  } else {
+    document.getElementById("metaAudioLen").textContent = micTimer.textContent || "00:00";
+  }
+  document.getElementById("metaTokens").textContent = tokens.total_tokens ?? 0;
+  document.getElementById("metaCost").textContent = `$${(costs.total_cost ?? 0).toFixed(4)}`;
+
+  document.getElementById("transcriptText").textContent = `"${data.transcript || 'No speech detected.'}"`;
+  document.getElementById("activeDraftBadge").textContent = `Draft #${data.draft_id} (${data.intent || 'lead'})`;
+
+  // Safely extract nested structures with fallback objects
+  const ext = data.extracted_data || {};
+  const acc = ext.account || {};
+  const con = ext.contact || {};
+  const lead = ext.lead || {};
+  const opp = ext.opportunity || {};
+
+  document.getElementById("acc_name").value = acc.account_name || "";
+  document.getElementById("acc_manager").value = acc.account_manager || "";
+  document.getElementById("acc_region").value = acc.region || "";
+
+  document.getElementById("con_name").value = con.contact_name || "";
+  document.getElementById("con_desig").value = con.designation || "";
+  document.getElementById("con_email").value = con.email || "";
+
+  document.getElementById("opp_title").value = opp.opportunity_name || lead.lead_name || "";
+  document.getElementById("opp_value").value = opp.deal_size || lead.deal_size || "";
+  document.getElementById("opp_tech").value = opp.technology || lead.technology || "";
+  document.getElementById("opp_service").value = opp.service || lead.service || "";
+  document.getElementById("opp_next").value = opp.next_steps || lead.next_steps || "";
+
+  // Highlight missing fields and handle clarification prompts
+  const missing = data.missing_fields || [];
+  document.getElementById("acc_name").classList.toggle("missing-highlight", missing.includes("account.account_name"));
+  document.getElementById("con_name").classList.toggle("missing-highlight", missing.includes("contact.contact_name"));
+
+  const badge = document.getElementById("draftStatusBadge");
+  if (missing.length > 0) {
+    badge.className = "badge-tag badge-incomplete";
+    badge.textContent = "INCOMPLETE";
+    clarificationBox.style.display = "block";
+    clarificationPromptText.textContent = data.clarification_prompt || "Please supply the missing required fields.";
+    commitBtn.disabled = true;
+  } else {
+    badge.className = "badge-tag badge-ready";
+    badge.textContent = "STAGED READY";
+    clarificationBox.style.display = "none";
+    commitBtn.disabled = false;
+  }
+
+  micStatusText.textContent = "Draft Processed";
+}
+
+// Resume and Patch Draft with Supplementary Details
+submitResumeBtn.addEventListener("click", async () => {
+  if (!currentDraft || !currentDraft.draft_id) return;
+  const extraText = resumeTextInput.value.trim();
+  if (!extraText) return;
+
+  const form = new FormData();
+  form.append("additional_text", extraText);
+
+  try {
+    const res = await fetch(`/api/voice/draft/${currentDraft.draft_id}/resume`, {
+      method: "POST",
+      body: form
+    });
+    const updated = await res.json();
+    if (!res.ok) throw new Error(updated.detail || "Failed to patch draft.");
+
+    resumeTextInput.value = "";
+    populateDraft(updated);
+    loadRecentDrafts();
+  } catch (err) {
+    alert("Patch error: " + err.message);
+  }
+});
+
+// One-Click Commit to CRM
+commitBtn.addEventListener("click", async () => {
+  if (!currentDraft) return;
+
+  const payload = {
+    draft_id: currentDraft.draft_id,
+    intent: currentDraft.intent || "create_lead",
+    account: {
+      account_name: document.getElementById("acc_name").value.trim(),
+      account_manager: document.getElementById("acc_manager").value.trim(),
+      region: document.getElementById("acc_region").value.trim(),
+    },
+    contact: {
+      contact_name: document.getElementById("con_name").value.trim(),
+      designation: document.getElementById("con_desig").value.trim(),
+      email: document.getElementById("con_email").value.trim(),
+    },
+    lead: {
+      lead_name: document.getElementById("opp_title").value.trim(),
+      deal_size: document.getElementById("opp_value").value || null,
+      technology: document.getElementById("opp_tech").value.trim(),
+      service: document.getElementById("opp_service").value.trim(),
+      next_steps: document.getElementById("opp_next").value.trim(),
+    },
+    opportunity: {
+      opportunity_name: document.getElementById("opp_title").value.trim(),
+      deal_size: document.getElementById("opp_value").value || null,
+      technology: document.getElementById("opp_tech").value.trim(),
+      service: document.getElementById("opp_service").value.trim(),
+      next_steps: document.getElementById("opp_next").value.trim(),
+    }
+  };
+
+  try {
+    const res = await fetch("/api/voice/commit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Database commit failed.");
+
+    alert(`Successfully committed to database!\nEntity: ${data.created_records.entity_type} (ID #${data.created_records.opportunity_id || data.created_records.lead_id || data.created_records.account_id})`);
+    loadRecentDrafts();
+  } catch (err) {
+    alert("Commit error: " + err.message);
+  }
+});
+
+// Load Recent Drafts
+async function loadRecentDrafts() {
+  try {
+    const res = await fetch("/api/voice/drafts");
+    if (!res.ok) return;
+    const drafts = await res.json();
+    const tbody = document.getElementById("draftsTableBody");
+
+    if (!drafts.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--mute);">No drafts found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = drafts.map(d => `
+      <tr onclick="loadSingleDraft(${d.id})">
+        <td><strong style="color: var(--purple-dark);">#${d.id}</strong></td>
+        <td><span class="badge-tag" style="background:#F1F2F5;">${d.target_entity}</span></td>
+        <td style="max-width: 480px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${d.raw_transcript}</td>
+        <td>
+          <span class="badge-tag ${d.status === 'COMPLETED' ? 'badge-ready' : 'badge-incomplete'}">${d.status}</span>
+        </td>
+        <td style="color: var(--mute); font-size: 12px;">${d.creation_date}</td>
+        <td style="text-align: right;">
+          <button style="border:1px solid var(--border); background:#fff; border-radius:6px; padding:4px 8px; cursor:pointer;" onclick="event.stopPropagation(); loadSingleDraft(${d.id})">Inspect ➔</button>
+        </td>
+      </tr>
+    `).join("");
+  } catch (err) {
+    console.error("Draft load error:", err);
+  }
+}
+
+// Load clicked draft into inspector
+function loadSingleDraft(id) {
+  fetch("/api/voice/drafts")
+    .then(r => r.json())
+    .then(drafts => {
+      const d = drafts.find(x => x.id === id);
+      if (d) {
+        populateDraft({
+          draft_id: d.id,
+          intent: d.target_entity,
+          transcript: d.raw_transcript,
+          extracted_data: d.extracted_data,
+          missing_fields: d.missing_fields,
+          clarification_prompt: d.clarification_prompt,
+          telemetry: {}
+        });
+      }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadRecentDrafts();
+});
+</script>
+</body>
+</html>
